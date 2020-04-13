@@ -1,0 +1,28 @@
+version: "3.2"
+services:
+  zero:
+    image: ${KG_DOCKER_IMAGE}:${KG_DOCKER_IMAGE_VERSION}
+    volumes:
+      - ./data:/dgraph
+    ports:
+      - 5080:5080
+      - 6080:6080
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  server:
+    image: ${KG_DOCKER_IMAGE}:${KG_DOCKER_IMAGE_VERSION}
+    volumes:
+      - ./data:/dgraph
+      - ./schema:/schema
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    depends_on:
+    - "zero"
+    command: dgraph alpha --lru_mb 2048 --zero=zero:5080
+  ratel:
+    image: ${KG_DOCKER_IMAGE}:${KG_DOCKER_IMAGE_VERSION}
+    ports:
+      - 8000:8000
+    command: dgraph-ratel

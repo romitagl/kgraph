@@ -1,0 +1,19 @@
+type Tenant {
+  name: String!
+  id: ID!
+  rootNodes: [Node!]
+}
+
+enum Permission {
+  Public
+  Private
+}
+
+type Node {
+  name: String!
+  id: ID!
+  permission: Permission!
+  tags: [String!]
+  blob: String
+  childNodes: [Node!]
+}

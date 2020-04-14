@@ -26,3 +26,5 @@ make
 
 - `backend` : backend services
   - `dgraph` : Graph Database
+- `frontend` : frontend services
+  - `react-kgraph` : React Web App

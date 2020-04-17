@@ -1,24 +1,27 @@
 import React from 'react';
-import logo from './logo.svg';
+import { useQuery, gql } from '@apollo/client';
+
 import './App.css';
 
+const Query = gql`
+  {
+    queryTenant { name id }
+  }
+`;
+
+interface Query {
+  queryTenant: [{
+    id: number;
+    name: string;
+  }];
+}
+
 function App() {
+  const { loading, error, data } = useQuery<Query>(Query);
+  console.log(loading, error, data);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {data !== undefined ? data.queryTenant.map((x: any) => <h1 key={x.id}>{x.name}</h1>) : null}
     </div>
   );
 }

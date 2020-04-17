@@ -24,3 +24,9 @@ Inside the `react-kgraph` directory, you can run several commands:
 - `npm run eject`
     Removes this tool and copies build dependencies, configuration files
     and scripts into the app directory. If you do this, you can’t go back!
+
+## Graphql
+
+npm install apollo-boost @apollo/react-hooks graphql
+
+https://www.apollographql.com/docs/react/get-started/

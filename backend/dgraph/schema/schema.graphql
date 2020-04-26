@@ -1,7 +1,6 @@
-type Tenant {
-  name: String!
-  id: ID!
-  rootNodes: [Node!]
+type User {
+  name: String! @id
+  rootTopics: [Topic!] @hasInverse(field: user)
 }
 
 enum Permission {
@@ -9,11 +8,13 @@ enum Permission {
   Private
 }
 
-type Node {
-  name: String!
+type Topic {
+  name: String! @search(by: [fulltext])
   id: ID!
   permission: Permission!
   tags: [String!]
-  blob: String
-  childNodes: [Node!]
+  text: String @search(by: [fulltext])
+  childTopics: [Topic!]
+  user: User!
+  datePublished: DateTime @search
 }

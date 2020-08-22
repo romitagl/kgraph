@@ -1,3 +1,1 @@
-query HelloWorld ($name: String) {
-  hello (name: $name)
-}
+query getUser($name: String!) {getUser (name: $name) { name }}

@@ -1,0 +1,3 @@
+mutation addUser($name: String!) { 
+  addUser(input: [{name: $name}] ) { user { name } } 
+}

@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <ApolloExample msg="Welcome to Your Vue.js App"/>
+    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
+    <KGraph msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
 <script>
-import ApolloExample from './components/ApolloExample.vue'
+import KGraph from './components/KGraph.vue'
 
 export default {
   name: 'App',
   components: {
-    ApolloExample
+    KGraph
   }
 }
 </script>
@@ -21,7 +21,7 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
   margin-top: 60px;
 }

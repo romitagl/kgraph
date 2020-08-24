@@ -1,0 +1,1 @@
+query getUser($name: String!) {getUser (name: $name) { name }}

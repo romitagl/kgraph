@@ -1,108 +1,114 @@
 <template>
   <div class="vue-kgraph">
-    <ul style="text-align:center; white-space:nowrap; list-style-type: none" >
-    <li data-direction="ltr" style="display:table-cell; position: relative; box-sizing: border-box; overflow: visible; padding: 50px;">
-      <!-- list all users -->
-      <ApolloQuery
-        :query="require('../graphql/QueryUsers.gql')"
-      >
-        <div slot-scope="{ result: { data } }">
-          <label for="select-name" class="label">Select user</label>
-          <template v-if="data">
-          <select v-model="selectedUser" id="select-name">
-            <option v-for="user of data.queryUser" :key="user.name" :value="user.name">
-              {{ user.name }}
-            </option>
-          </select>
-          <div> Selected: {{ selectedUser }} </div>
-          </template>
-        </div>
-      </ApolloQuery>
-      <ApolloMutation
-        :mutation="require('../graphql/RemoveUser.graphql')"
-        :variables="{
+    <ul>
+      <li>
+        <!-- list all users -->
+        <ApolloQuery :query="require('../graphql/QueryUsers.gql')">
+          <div slot-scope="{ result: { data } }">
+            <label for="select-name" class="label">Select user</label>
+            <template v-if="data">
+              <select v-model="selectedUser" id="select-name">
+                <option
+                  v-for="user of data.queryUser"
+                  :key="user.name"
+                  :value="user.name"
+                >{{ user.name }}</option>
+              </select>
+              <div>Selected: {{ selectedUser }}</div>
+            </template>
+          </div>
+        </ApolloQuery>
+        <ApolloMutation
+          :mutation="require('../graphql/RemoveUser.graphql')"
+          :variables="{
             name: selectedUser,
         }"
-        @done="selectedUser = 'Deleted'"
-      >
-      <template slot-scope="{ mutate, error }">
-          <!-- Mutation Trigger -->          
-          <button @click="mutate()">Delete User</button>
+          @done="selectedUser = 'Deleted'"
+        >
+          <template slot-scope="{ mutate, error }">
+            <!-- Mutation Trigger -->
+            <button @click="mutate()">Delete User</button>
 
-          <!-- Error -->
-          <p v-if="error">{{ error }}</p>
-      </template>
-      </ApolloMutation>
+            <!-- Error -->
+            <p v-if="error">{{ error }}</p>
+          </template>
+        </ApolloMutation>
       </li>
 
-      <li data-direction="ltr" style="display:table-cell; position: relative; box-sizing: border-box; overflow: visible; padding: 50px;">
-      <!-- add new user -->
-      <ApolloMutation
-        :mutation="require('../graphql/AddUser.graphql')"
-        :variables="{
+      <li>
+        <!-- add new user -->
+        <ApolloMutation
+          :mutation="require('../graphql/AddUser.graphql')"
+          :variables="{
             name: newUser,
         }"
-        @done="name = newUser; newUser = ''"
-      >
-      <template slot-scope="{ mutate, error }">
-          <!-- Mutation Trigger -->
-          <label class="label">Create new user</label>
-          <input v-model="newUser" type="text" placeholder="username" />
-          
-          <button @click="mutate()">Add User</button>
-
-          <!-- Error -->
-          <p v-if="error">{{ error }}</p>
-      </template>
-      </ApolloMutation>
-      </li>
-
-      <li data-direction="ltr" style="display:table-cell; position: relative; box-sizing: border-box; overflow: visible; padding: 50px;">
-      <!-- Cute tiny form -->
-      <div class="form">
-        <label for="field-name" class="label">Find user</label>
-        <input
-          v-model="name"
-          placeholder="Type a name"
-          class="input"
-          id="field-name"
+          @done="getUser = newUser; newUser = ''"
         >
-      </div>
+          <template slot-scope="{ mutate, error }">
+            <!-- Mutation Trigger -->
+            <label class="label">Create new user</label>
+            <input v-model="newUser" type="text" placeholder="getUser" />
 
-      <!-- retrieve single user -->
-      <ApolloQuery
-        :query="require('../graphql/GetUser.gql')"
-        :variables="{ name }"
-      >
-        <template slot-scope="{ result: { error, data } }">
-          <!-- Error -->
-          <div v-if="error" class="error apollo">An error occured</div>
+            <button @click="mutate()">Add User</button>
 
-          <!-- Result -->
-          <div v-else-if="data" class="result apollo">{{ data }}</div>
-
-          <!-- No result -->
-          <div v-else class="no-result apollo">No result :(</div>
-        </template>
-      </ApolloQuery>
+            <!-- Error -->
+            <p v-if="error">{{ error }}</p>
+          </template>
+        </ApolloMutation>
       </li>
 
+      <li>
+        <!-- Cute tiny form -->
+        <div class="form">
+          <label for="field-name" class="label">Find user</label>
+          <input v-model="getUser" placeholder="Type a name" class="input" id="field-name" />
+        </div>
+
+        <!-- retrieve single user -->
+        <ApolloQuery :query="require('../graphql/GetUser.gql')" :variables="{ name: getUser }">
+          <template slot-scope="{ result: { error, data } }">
+            <!-- Error -->
+            <div v-if="error" class="error apollo">An error occured</div>
+
+            <!-- Result -->
+            <div v-else-if="data" class="result apollo">{{ data.getUser.name }}</div>
+
+            <!-- No result -->
+            <div v-else class="no-result apollo">No result :(</div>
+          </template>
+        </ApolloQuery>
+      </li>
+    </ul>
+
+    <ul>
+      <li>
+        <ApolloQuery :query="require('../graphql/GetUser.gql')" :variables="{ name: selectedUser }">
+          <template slot-scope="{ result: { error, data } }">
+            <!-- Error -->
+            <div v-if="error" class="error apollo">An error occured</div>
+
+            <!-- Result -->
+            <div v-else-if="data" class="result apollo">{{ data }}</div>
+
+            <!-- No result -->
+            <div v-else class="no-result apollo">No result :(</div>
+          </template>
+        </ApolloQuery>
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
-
 export default {
-  data () {
+  data() {
     return {
-      name: '',
-      selectedUser: '',
-      newUser: '',
-    }
+      getUser: "",
+      selectedUser: "",
+      newUser: "",
+    };
   },
-}
-
+};
 </script>
 
 <style scoped>
@@ -151,5 +157,19 @@ label {
 
 .image-input {
   margin: 20px;
+}
+
+ul {
+  list-style-type: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+li {
+  display: table-cell;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+  padding: 50px;
 }
 </style>

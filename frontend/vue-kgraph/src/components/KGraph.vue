@@ -65,7 +65,11 @@
         </div>
 
         <!-- retrieve single user -->
-        <ApolloQuery :query="require('../graphql/GetUser.gql')" :variables="{ name: getUser }">
+        <ApolloQuery
+          v-if="getUser"
+          :query="require('../graphql/GetUser.gql')"
+          :variables="{ name: getUser }"
+        >
           <template slot-scope="{ result: { error, data } }">
             <!-- Error -->
             <div v-if="error" class="error apollo">An error occured</div>
@@ -82,13 +86,18 @@
 
     <ul>
       <li>
-        <ApolloQuery :query="require('../graphql/GetUser.gql')" :variables="{ name: selectedUser }">
+        <ApolloQuery
+          v-if="selectedUser"
+          :query="require('../graphql/GetUser.gql')"
+          :variables="{ name: selectedUser }"
+          @done="getTopics(data)"
+        >
           <template slot-scope="{ result: { error, data } }">
             <!-- Error -->
             <div v-if="error" class="error apollo">An error occured</div>
 
             <!-- Result -->
-            <div v-else-if="data" class="result apollo">{{ data }}</div>
+            <div v-else-if="data" class="result apollo">{{ getTopics(data) }}</div>
 
             <!-- No result -->
             <div v-else class="no-result apollo">No result :(</div>
@@ -96,16 +105,67 @@
         </ApolloQuery>
       </li>
     </ul>
+    <div id="app">
+      <treeselect :multiple="true" :options="topics" />
+    </div>
   </div>
 </template>
 
 <script>
+// import the component
+// https://github.com/riophae/vue-treeselect
+import Treeselect from "@riophae/vue-treeselect";
+// import the styles
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+
 export default {
+  // register the component
+  components: { Treeselect },
+  methods: {
+    getTopics(jsonTopics) {
+      console.log("---- getTopics() ---");
+      console.log(jsonTopics.getUser.name);
+      let topicsTree = [];
+      if (!jsonTopics) {
+        topicsTree = [
+          {
+            id: "a",
+            label: "a",
+            children: [
+              {
+                id: "aa",
+                label: "aa",
+              },
+              {
+                id: "ab",
+                label: "ab",
+              },
+            ],
+          },
+          {
+            id: "b",
+            label: "b",
+          },
+          {
+            id: "c",
+            label: "c",
+          },
+        ];
+      } else {
+        jsonTopics.getUser.rootTopics?.forEach((topic) => {
+          topicsTree.push({ id: topic.id, label: topic.name });
+        });
+        this.topics = topicsTree;
+        return jsonTopics;
+      }
+    },
+  },
   data() {
     return {
       getUser: "",
       selectedUser: "",
       newUser: "",
+      topics: [],
     };
   },
 };

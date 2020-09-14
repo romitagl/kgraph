@@ -1,1 +1,1 @@
-query getUser($name: String!) {getUser (name: $name) { name rootTopics { id name text tags } }}
+query getUser($name: String!) {getUser (name: $name) { name rootTopics { id name text tags childTopics { id name } } }}

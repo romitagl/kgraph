@@ -153,7 +153,11 @@ export default {
         ];
       } else {
         jsonTopics.getUser.rootTopics?.forEach((topic) => {
-          topicsTree.push({ id: topic.id, label: topic.name });
+          const children = topic.childTopics?.map((childTopic) => ({
+            id: childTopic.id,
+            label: childTopic.name,
+          }));
+          topicsTree.push({ id: topic.id, label: topic.name, children });
         });
         this.topics = topicsTree;
         return jsonTopics;

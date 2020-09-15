@@ -48,10 +48,17 @@ Render the schema in the query [console](http://localhost:8000/?latest): `schema
 # create schema
 curl --request POST -H "Content-Type: application/json"  -d 'type Person { name: String }' http://localhost:8080/admin/schema
 # run query on the schema
-curl -X POST -H "Content-Type: application/json" -d '{"query":"query {queryPerson {name}}"}' http://localhost:8080/graphql
+curl -X POST -H "Content-Type: application/json" -d '{"query":"query {queryUser {name}}"}' http://localhost:8080/graphql
 # query with params
 curl -H 'Content-Type: application/json' localhost:8080/query -d '{
   "query": "query qWithVars($name: string) { q(func: eq(name, $name)) { name } }",
   "variables": {"$name": "Alice"}
 }'
+```
+
+### Notes
+
+```text
+ mutation  { addTopic(input:[{name:"newTopic2", permission:Private, user:{name:"user1"}, childTopics:[{name:"childTopic", permission:Private, user:{name:"user1"}}]}]) { topic { name id childTopics { name } } } }
+
 ```

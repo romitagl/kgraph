@@ -105,18 +105,22 @@
         </ApolloQuery>
       </li>
     </ul>
-    <div id="app">
-      <treeselect :multiple="true" :options="topics" />
-    </div>
+    <ul>
+      <li>
+        <div id="app">
+          <treeselect :multiple="true" :options="topics" />
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
-// import the component
 // https://github.com/riophae/vue-treeselect
 import Treeselect from "@riophae/vue-treeselect";
-// import the styles
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+
+// to try: https://github.com/ondras/my-mind
 
 export default {
   // register the component

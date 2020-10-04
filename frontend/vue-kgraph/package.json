@@ -10,6 +10,7 @@
   "dependencies": {
     "@riophae/vue-treeselect": "^0.4.0",
     "core-js": "^3.6.5",
+    "mind-elixir": "^0.11.6",
     "vue": "^2.6.11",
     "vue-apollo": "^3.0.0-beta.11"
   },

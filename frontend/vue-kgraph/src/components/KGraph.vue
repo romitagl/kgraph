@@ -12,7 +12,9 @@
                   v-for="user of data.queryUser"
                   :key="user.name"
                   :value="user.name"
-                >{{ user.name }}</option>
+                >
+                  {{ user.name }}
+                </option>
               </select>
               <div>Selected: {{ selectedUser }}</div>
             </template>
@@ -22,7 +24,7 @@
           :mutation="require('../graphql/RemoveUser.graphql')"
           :variables="{
             name: selectedUser,
-        }"
+          }"
           @done="selectedUser = 'Deleted'"
         >
           <template slot-scope="{ mutate, error }">
@@ -41,8 +43,11 @@
           :mutation="require('../graphql/AddUser.graphql')"
           :variables="{
             name: newUser,
-        }"
-          @done="getUser = newUser; newUser = ''"
+          }"
+          @done="
+            getUser = newUser;
+            newUser = '';
+          "
         >
           <template slot-scope="{ mutate, error }">
             <!-- Mutation Trigger -->
@@ -61,7 +66,12 @@
         <!-- Cute tiny form -->
         <div class="form">
           <label for="field-name" class="label">Find user</label>
-          <input v-model="getUser" placeholder="Type a name" class="input" id="field-name" />
+          <input
+            v-model="getUser"
+            placeholder="Type a name"
+            class="input"
+            id="field-name"
+          />
         </div>
 
         <!-- retrieve single user -->
@@ -75,7 +85,9 @@
             <div v-if="error" class="error apollo">An error occured</div>
 
             <!-- Result -->
-            <div v-else-if="data" class="result apollo">{{ data.getUser.name }}</div>
+            <div v-else-if="data" class="result apollo">
+              {{ data.getUser.name }}
+            </div>
 
             <!-- No result -->
             <div v-else class="no-result apollo">No result :(</div>
@@ -97,7 +109,9 @@
             <div v-if="error" class="error apollo">An error occured</div>
 
             <!-- Result -->
-            <div v-else-if="data" class="result apollo">{{ getTopics(data) }}</div>
+            <div v-else-if="data" class="result apollo">
+              {{ getTopics(data) }}
+            </div>
 
             <!-- No result -->
             <div v-else class="no-result apollo">No result :(</div>
@@ -108,9 +122,22 @@
     <ul>
       <li>
         <div id="app">
-          <treeselect :multiple="true" :options="topics" />
+          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
+          <treeselect
+            :multiple="true"
+            :open-on-click="openOnClick"
+            :options="topics"
+          />
         </div>
+        <p>
+          <label
+            ><input type="checkbox" v-model="openOnClick" />Open on click</label
+          >
+        </p>
       </li>
+    </ul>
+    <ul>
+      <div id="map" style="width: 100%; height: 500px"></div>
     </ul>
   </div>
 </template>
@@ -120,7 +147,12 @@
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
+import "regenerator-runtime";
+import MindElixir from "mind-elixir";
+
 // to try: https://github.com/ondras/my-mind
+// to try: https://github.com/Mindmapp/mindmapp
+// https://github.com/ssshooter/mind-elixir-core
 
 export default {
   // register the component
@@ -173,8 +205,22 @@ export default {
       getUser: "",
       selectedUser: "",
       newUser: "",
+      openOnClick: true,
       topics: [],
     };
+  },
+  mounted() {
+    this.ME = new MindElixir({
+      el: "#map",
+      direction: MindElixir.LEFT,
+      data: MindElixir.new("add topic"),
+      draggable: true, // default true
+      contextMenu: true, // default true
+      toolBar: true, // default true
+      nodeMenu: true, // default true
+      keypress: true, // default true
+    });
+    this.ME.init();
   },
 };
 </script>

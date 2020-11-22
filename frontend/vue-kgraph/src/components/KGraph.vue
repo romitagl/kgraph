@@ -154,6 +154,20 @@ import MindElixir from "mind-elixir";
 // to try: https://github.com/Mindmapp/mindmapp
 // https://github.com/ssshooter/mind-elixir-core
 
+const meData = {
+  el: "#map",
+  direction: MindElixir.LEFT,
+  data: { nodeData: { id: 'root',
+          topic: 'Knowledge Graph',
+          root: true,
+          children:[] } },
+  draggable: true, // default true
+  contextMenu: true, // default true
+  toolBar: true, // default true
+  nodeMenu: true, // default true
+  keypress: true, // default true
+};
+
 export default {
   // register the component
   components: { Treeselect },
@@ -195,6 +209,35 @@ export default {
           }));
           topicsTree.push({ id: topic.id, label: topic.name, children });
         });
+        
+        let childrenArr = [];
+        jsonTopics.getUser.rootTopics?.forEach((topic) => {
+          const children = {
+            id: topic.id,
+            topic: topic.name,
+          };
+          childrenArr.push(children);
+        });
+
+        // Mind Map
+        let mindMap = {
+            el: "#map",
+            direction: MindElixir.LEFT,
+            data: { nodeData: { id: 'root',
+                    topic: 'Knowledge Graph',
+                    root: true,
+                    children: childrenArr } },
+            draggable: true, // default true
+            contextMenu: true, // default true
+            toolBar: true, // default true
+            nodeMenu: true, // default true
+            keypress: true, // default true
+          };
+
+        this.ME = new MindElixir(mindMap);
+        this.ME.init();
+        // console.log(this.ME.getAllData());
+
         this.topics = topicsTree;
         return jsonTopics;
       }
@@ -207,19 +250,11 @@ export default {
       newUser: "",
       openOnClick: true,
       topics: [],
+      ME: null,
     };
   },
   mounted() {
-    this.ME = new MindElixir({
-      el: "#map",
-      direction: MindElixir.LEFT,
-      data: MindElixir.new("add topic"),
-      draggable: true, // default true
-      contextMenu: true, // default true
-      toolBar: true, // default true
-      nodeMenu: true, // default true
-      keypress: true, // default true
-    });
+    this.ME = new MindElixir(meData);
     this.ME.init();
   },
 };

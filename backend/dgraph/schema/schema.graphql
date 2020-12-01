@@ -1,6 +1,6 @@
 type User {
   name: String! @id
-  rootTopics: [Topic!] @hasInverse(field: user)
+  rootTopics: [Topic!]
 }
 
 enum Permission {
@@ -15,6 +15,5 @@ type Topic {
   tags: [String!]
   text: String @search(by: [fulltext])
   childTopics: [Topic!]
-  user: User!
   datePublished: DateTime @search
 }

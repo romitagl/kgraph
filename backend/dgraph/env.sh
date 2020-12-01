@@ -3,7 +3,7 @@
 #  -- DGRAPH ENV VARIABLES -- 
 
 export KG_DOCKER_IMAGE=dgraph/dgraph
-export KG_DOCKER_IMAGE_VERSION=latest
+export KG_DOCKER_IMAGE_VERSION=v20.07.2
 
 export KG_DGRAPH_BASE_URL="http://localhost:8080"
 export KG_DGRAPH_GRAPHQL_ENDPOINT="$KG_DGRAPH_BASE_URL/graphql"

@@ -1,1 +1,10 @@
-query getUser($name: String!) {getUser (name: $name) { name rootTopics { id name text tags childTopics { id name } } }}
+fragment Children on Topic {
+  name id text tags childTopics { name } 
+}
+
+query getUser($name: String!) {
+  getUser(name: $name){
+    name
+    rootTopics {name id text tags childTopics{ ...Children } }
+  }
+}

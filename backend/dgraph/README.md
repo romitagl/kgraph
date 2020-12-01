@@ -40,7 +40,7 @@ Point your favorite tool at http://localhost:8080/graphql and schema introspecti
 
 Render the schema in the query [console](http://localhost:8000/?latest): `schema {}`
 
-(Dgraph Query Language)[https://dgraph.io/docs/v1.0.9/query-language]
+Dgraph Query Language:<https://dgraph.io/docs/v1.0.9/query-language>
 
 ### GraphQL query examples
 
@@ -56,9 +56,63 @@ curl -H 'Content-Type: application/json' localhost:8080/query -d '{
 }'
 ```
 
-### Notes
+### Graphql example queries
 
 ```text
- mutation  { addTopic(input:[{name:"newTopic2", permission:Private, user:{name:"user1"}, childTopics:[{name:"childTopic", permission:Private, user:{name:"user1"}}]}]) { topic { name id childTopics { name } } } }
-
+# add topics to "user1"
+mutation{
+  updateUser(input: {filter:{name: {eq: "user1"}}, set: {rootTopics:
+  [{name:"newTopic2", permission:Private, childTopics:[{name:"childTopic", permission:Private, childTopics:[{name:"childChildTopic", permission:Private}]}]}]}}){
+    numUids
+  }
+}
+# query user by name using variables: {"name" : "test" }
+query getUser($name: String!) {getUser (name: $name) { name rootTopics { name text } }}
+# add test topics
+mutation{
+  updateUser(input: {filter:{name: {eq: "test"}}, set: {rootTopics:
+  [
+    {name:"1", permission:Private, childTopics:
+    [
+      {name:"11", permission:Private, childTopics:
+        [
+          {name:"111", permission:Private}
+        ]
+      }
+    ]
+    },
+    {name:"2", permission:Private, childTopics:
+    [
+      {name:"21", permission:Private, childTopics:
+      [
+        {name:"211", permission:Private},
+        {name:"212", permission:Private},
+        {name:"213", permission:Private,
+          childTopics:[{name:"2131", permission:Private}]
+        }
+      ]
+      }
+    ]
+    },
+    {name:"3", permission:Private, childTopics:
+    [
+      {name:"31", permission:Private,
+        childTopics:[{name:"311", permission:Private}]
+      }
+    ]
+    },
+    {name:"4", permission:Private, childTopics:
+    [
+      {name:"41", permission:Private},
+      {name:"42", permission:Private},
+      {name:"43", permission:Private,childTopics:
+        [{name:"421", permission:Private}]
+      }
+    ]
+    },
+  ]
+  }}){
+    numUids
+  }
+}
 ```

@@ -11,7 +11,7 @@
                 <option
                   v-for="user of data.queryUser"
                   :key="user.name"
-                  :value="user.name"
+                  v-bind:value="user.name"
                 >
                   {{ user.name }}
                 </option>
@@ -99,17 +99,17 @@
     <ul>
       <li>
         <ApolloQuery
-          v-if="selectedUser"
+          v-if="selectedUser != prevSelectedUser"
           :query="require('../graphql/GetUser.gql')"
-          :variables="{ name: selectedUser }"
-          @done="getTopics(data)"
+          :variables="{ name: selectedUser }" 
         >
           <template slot-scope="{ result: { error, data } }">
             <!-- Error -->
-            <div v-if="error" class="error apollo">An error occured</div>
+            <div v-if="error" class="error apollo">An error occured {{ prevSelectedUser = selectedUser }}</div>
 
             <!-- Result -->
             <div v-else-if="data" class="result apollo">
+              {{ prevSelectedUser = selectedUser }}
               {{ getTopics(data) }}
             </div>
 
@@ -156,7 +156,7 @@ import MindElixir from "mind-elixir";
 
 const meData = {
   el: "#map",
-  direction: MindElixir.LEFT,
+  direction: MindElixir.SIDE,
   data: { nodeData: { id: 'root',
           topic: 'Knowledge Graph',
           root: true,
@@ -168,6 +168,43 @@ const meData = {
   keypress: true, // default true
 };
 
+function buildTopicsTree(childrenArr, rootTopics, isTopic) {
+  // console.log(rootTopics)
+  if(Array.isArray(rootTopics)) {
+    for (var counter = 0; counter < rootTopics.length; counter++) {
+      // console.log(counter)
+      const topic = rootTopics[counter];
+      let recursiveChildren = [];
+      if(Array.isArray(topic.childTopics)) {
+        // console.log("array - childTopics.length: " + topic.childTopics.length)
+        if (topic.childTopics.length > 0) {
+          buildTopicsTree(recursiveChildren, topic.childTopics, isTopic);
+        }
+      }
+      const children = isTopic ? {
+        id: topic.id,
+        topic: topic.name,
+        children: recursiveChildren
+      } : {
+        id: topic.id,
+        label: topic.name,
+        children: recursiveChildren
+      }
+      childrenArr.push(children);
+    }
+  } // child element
+  else {
+    const children = isTopic ? {
+      id: rootTopics.id,
+      topic: rootTopics.name,
+    } : {
+      id: rootTopics.id,
+      label: rootTopics.name,
+    }
+    childrenArr.push(children);
+  }
+}
+
 export default {
   // register the component
   components: { Treeselect },
@@ -175,6 +212,7 @@ export default {
     getTopics(jsonTopics) {
       console.log("---- getTopics() ---");
       console.log(jsonTopics.getUser.name);
+
       let topicsTree = [];
       if (!jsonTopics) {
         topicsTree = [
@@ -202,27 +240,15 @@ export default {
           },
         ];
       } else {
-        jsonTopics.getUser.rootTopics?.forEach((topic) => {
-          const children = topic.childTopics?.map((childTopic) => ({
-            id: childTopic.id,
-            label: childTopic.name,
-          }));
-          topicsTree.push({ id: topic.id, label: topic.name, children });
-        });
+        buildTopicsTree(topicsTree, jsonTopics.getUser.rootTopics, false);
         
         let childrenArr = [];
-        jsonTopics.getUser.rootTopics?.forEach((topic) => {
-          const children = {
-            id: topic.id,
-            topic: topic.name,
-          };
-          childrenArr.push(children);
-        });
+        buildTopicsTree(childrenArr, jsonTopics.getUser.rootTopics, true);
 
         // Mind Map
         let mindMap = {
             el: "#map",
-            direction: MindElixir.LEFT,
+            direction: MindElixir.SIDE,
             data: { nodeData: { id: 'root',
                     topic: 'Knowledge Graph',
                     root: true,
@@ -247,6 +273,7 @@ export default {
     return {
       getUser: "",
       selectedUser: "",
+      prevSelectedUser: "",
       newUser: "",
       openOnClick: true,
       topics: [],

@@ -1,2 +1,3 @@
-# kgraph
+# KGraph
+
 Knowledge Graph Project

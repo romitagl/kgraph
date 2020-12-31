@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      # skip CI for documentation updates
+      - "**/*.md"
+
+jobs:
+  run-ci-tests:
+    runs-on: ubuntu-latest
+    env:
+      HASURA_GRAPHQL_ADMIN_SECRET: ${{ secrets.CI_HASURA_GRAPHQL_ADMIN_SECRET }}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
+
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v1
+
+      - name: Run CI Tests
+        shell: bash
+        run: |
+          make ci

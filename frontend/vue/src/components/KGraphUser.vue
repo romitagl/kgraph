@@ -69,7 +69,11 @@
               <div v-else-if="error" class="error apollo">{{ error }}</div>
 
               <!-- Result -->
-              <div v-else-if="data" class="result apollo">{{ data }}</div>
+              <div v-else-if="data != null" class="result apollo">
+                {{ prevTopicName = topicName }}
+                <!-- {{ data }} -->
+                {{ getTopics(data) }}
+              </div>
 
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>

@@ -22,7 +22,8 @@ This project aims at creating a knowledge database with hierarchical topic model
 
 - `backend` : backend services
   - `hasura` : GraphQL Server + PostgreSQL Database
-- `frontend` : frontend services - WIP
+- `frontend` : frontend services
+  - `vue` : Vue JS (version 2) framework + Apollo Graphql Client
 
 ## Developer Notes
 

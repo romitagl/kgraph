@@ -57,9 +57,32 @@
           </template>
         </ApolloMutation>
       </li>
-
+    </ul>
+    <ul>
       <li>
-        <!-- find users -->
+        <!-- add topic for user -->
+        <ApolloMutation
+          :mutation="require('../graphql/AddTopicForUser.gql')"
+          :variables="{
+            topicsName: topicName,
+            username: selectedUser
+          }"
+          @done="onTopicAdded"
+        >
+          <template slot-scope="{ mutate, error}">
+            <!-- Mutation Trigger -->
+            <label class="label">Add new topic</label>
+            <input v-model="topicName" type="text" placeholder="Topic name" />
+            <button @click="mutate()">Add Topic</button>
+            <!-- Error -->
+            <p v-if="error">{{ error }}</p>
+            <!-- result -->
+            <p> {{ topicAddedResult }}</p>
+          </template>
+        </ApolloMutation>
+      </li>
+      <li>
+        <!-- search topic for user -->
           <div class="form">
             <label for="field-name" class="label">Find topics for user {{ selectedUser }}:</label>
             <input
@@ -100,9 +123,10 @@ export default {
     return {
       username: '',
       selectedUser: '',
-      topicName: '',
       newUser: '',
       userAddedResult: '',
+      topicName: '',
+      topicAddedResult: '',
     }
   },
 
@@ -113,6 +137,9 @@ export default {
     onUserAdded: function (data) {
       this.userAddedResult = "User created at: " + data.data.insert_kgraph_users.returning[0].created_at
       this.selectedUser = data.data.insert_kgraph_users.returning[0].username
+    },
+    onTopicAdded: function (data) {
+      this.topicAddedResult = "Topic created at: " + data.data.insert_kgraph_topics.returning[0].created_at
     }
   },
 }

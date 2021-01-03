@@ -1,5 +1,5 @@
-query GetUser ($name: String!) {
-  kgraph_users(where: {username: {_eq: $name}}) {
+query GetUser ($username: String!) {
+  kgraph_users(where: {username: {_eq: $username}}) {
     username
     display_name
     created_at

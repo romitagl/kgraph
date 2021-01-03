@@ -2,7 +2,7 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">Home</router-link> |
-      <router-link to="/apolloexample">ApolloExample</router-link>
+      <router-link to="/kgraph">KGraph</router-link>
     </div>
     <router-view/>
   </div>

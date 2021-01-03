@@ -11,7 +11,7 @@ npm install -g @vue/cli
 
 vue create vue
 
-# (optional) to upgrade 
+# (optional) to upgrade
 cd vue ; vue upgrade --next
 
 # to add Apollo Graphql integration: https://apollo.vuejs.org/guide/installation.html#vue-cli-plugin

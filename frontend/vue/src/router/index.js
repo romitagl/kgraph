@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import ApolloExample from '../components/ApolloExample'
+import KGraph from '../components/KGraph'
 
 Vue.use(VueRouter)
 
@@ -12,9 +12,9 @@ const routes = [
     component: Home
   },
   {
-    path: '/apolloexample',
-    name: 'ApolloExample',
-    component: ApolloExample
+    path: '/kgraph',
+    name: 'KGraph',
+    component: KGraph
   }
 ]
 

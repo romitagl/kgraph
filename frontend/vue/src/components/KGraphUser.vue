@@ -35,7 +35,7 @@
         >
           <template slot-scope="{ mutate, error}">
             <!-- Mutation Trigger -->
-            <label class="label">Add new topic</label>
+            <label class="label">Add new root topic</label>
             <input v-model="topicName" type="text" placeholder="Topic name" />
             <button @click="mutate()">Add Topic</button>
             <!-- Error -->
@@ -57,6 +57,7 @@
             >
           </div>
           <ApolloQuery
+            v-if="topicName != prevTopicName && selectedUser != ''"
             :query="require('../graphql/SearchTopicsForUser.gql')"
             :variables="{ topicsName: '%'+topicName+'%', username: selectedUser }"
           >
@@ -68,12 +69,24 @@
               <div v-else-if="error" class="error apollo">{{ error }}</div>
 
               <!-- Result -->
-              <div v-else-if="data" class="result apollo">{{ data }}</div>
+              <div v-else-if="data != null" class="result apollo">
+                {{ prevTopicName = topicName }}
+                <!-- {{ data }} -->
+                {{ getTopics(data) }}
+              </div>
 
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>
             </template>
         </ApolloQuery>
+        <div id="vuetreeselect">
+          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
+          <treeselect
+            :multiple="true"
+            :open-on-click="true"
+            :options="topics"
+          />
+        </div>
       </li>
     </ul>
     
@@ -81,6 +94,24 @@
 </template>
 
 <script>
+// https://github.com/riophae/vue-treeselect
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+
+function buildTopicsTree(topicsTree, kgraph_topics) {
+  // console.log(kgraph_topics)
+  if(Array.isArray(kgraph_topics)) {
+    for (var counter = 0; counter < kgraph_topics.length; counter++) {
+      // console.log(counter)
+      const topic = kgraph_topics[counter];
+      const element = {
+        id: topic.id,
+        label: topic.name,
+      }
+      topicsTree.push(element);
+    }
+  }
+}
 
 export default {
   data () {
@@ -88,16 +119,28 @@ export default {
       username: '',
       selectedUser: '',
       topicName: '',
+      prevTopicName: ' ',
       topicAddedResult: '',
+      // vue-treeselect
+      topics: [],
     }
   },
 
   computed: {
   },
+  // register the component
+  components: { Treeselect },
 
   methods: {
     onTopicAdded: function (data) {
       this.topicAddedResult = "Topic created at: " + data.data.insert_kgraph_topics.returning[0].created_at
+    },
+    getTopics(data) {
+      console.log("---- getTopics() ---");
+      console.log(data);
+      let topicsTree = [];
+      buildTopicsTree(topicsTree, data.kgraph_topics)
+      this.topics = topicsTree;
     }
   },
 }

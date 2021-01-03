@@ -1,28 +1,6 @@
 <template>
-  <div class="kgraph">
+  <div class="kgraphuser">
     <ul>
-      <li>
-        <!-- add new user -->
-        <ApolloMutation
-          :mutation="require('../graphql/AddUser.gql')"
-          :variables="{
-            username: newUser,
-          }"
-          @done="onUserAdded"
-        >
-          <template slot-scope="{ mutate, error}">
-            <!-- Mutation Trigger -->
-            <label class="label">Create new user</label>
-            <input v-model="newUser" type="text" placeholder="Type a name" />
-            <button @click="mutate()">Add User</button>
-            <!-- Error -->
-            <p v-if="error">{{ error }}</p>
-            <!-- result -->
-            <p> {{ userAddedResult }}</p>
-          </template>
-        </ApolloMutation>
-      </li>
-
       <li>
         <!-- list all users -->
         <ApolloQuery :query="require('../graphql/ListUsers.gql')">
@@ -42,20 +20,6 @@
             </template>
           </div>
         </ApolloQuery>
-        <ApolloMutation
-          :mutation="require('../graphql/DeleteUser.gql')"
-          :variables="{
-            username: selectedUser,
-          }"
-          @done="selectedUser = 'Deleted'"
-        >
-          <template slot-scope="{ mutate, error }">
-            <!-- Mutation Trigger -->
-            <button @click="mutate()">Delete User</button>
-            <!-- Error -->
-            <p v-if="error">{{ error }}</p>
-          </template>
-        </ApolloMutation>
       </li>
     </ul>
     <ul>
@@ -123,8 +87,6 @@ export default {
     return {
       username: '',
       selectedUser: '',
-      newUser: '',
-      userAddedResult: '',
       topicName: '',
       topicAddedResult: '',
     }
@@ -134,10 +96,6 @@ export default {
   },
 
   methods: {
-    onUserAdded: function (data) {
-      this.userAddedResult = "User created at: " + data.data.insert_kgraph_users.returning[0].created_at
-      this.selectedUser = data.data.insert_kgraph_users.returning[0].username
-    },
     onTopicAdded: function (data) {
       this.topicAddedResult = "Topic created at: " + data.data.insert_kgraph_topics.returning[0].created_at
     }

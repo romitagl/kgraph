@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-import KGraph from '../components/KGraph'
+import KGraphAdmin from '../components/KGraphAdmin'
+import KGraphUser from '../components/KGraphUser'
 
 Vue.use(VueRouter)
 
@@ -12,9 +13,14 @@ const routes = [
     component: Home
   },
   {
-    path: '/kgraph',
-    name: 'KGraph',
-    component: KGraph
+    path: '/kgraphadmin',
+    name: 'KGraphAdmin',
+    component: KGraphAdmin
+  },
+  {
+    path: '/kgraphuser',
+    name: 'KGraphUser',
+    component: KGraphUser
   }
 ]
 

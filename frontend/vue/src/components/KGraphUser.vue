@@ -78,6 +78,14 @@
               <div v-else class="no-result apollo">No result :(</div>
             </template>
         </ApolloQuery>
+        <div id="vuetreeselect">
+          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
+          <treeselect
+            :multiple="true"
+            :open-on-click="true"
+            :options="topics"
+          />
+        </div>
       </li>
     </ul>
     <ul>

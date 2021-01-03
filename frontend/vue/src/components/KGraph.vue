@@ -1,35 +1,94 @@
 <template>
   <div class="kgraph">
-    <!-- Cute tiny form -->
-    <div class="form">
-      <label for="field-name" class="label">Find user:</label>
-      <input
-        v-model="username"
-        placeholder="Type a name"
-        class="input"
-        id="field-name"
-      >
-    </div>
+    <ul>
+      <li>
+        <!-- add new user -->
+        <ApolloMutation
+          :mutation="require('../graphql/AddUser.gql')"
+          :variables="{
+            username: newUser,
+          }"
+          @done="onUserAdded"
+        >
+          <template slot-scope="{ mutate, error}">
+            <!-- Mutation Trigger -->
+            <label class="label">Create new user</label>
+            <input v-model="newUser" type="text" placeholder="Type a name" />
+            <button @click="mutate()">Add User</button>
+            <!-- Error -->
+            <p v-if="error">{{ error }}</p>
+            <!-- result -->
+            <p> {{ userAddedResult }}</p>
+          </template>
+        </ApolloMutation>
+      </li>
 
-    <!-- Apollo watched Graphql query -->
-    <ApolloQuery
-      :query="require('../graphql/GetUser.gql')"
-      :variables="{ username }"
-    >
-      <template slot-scope="{ result: { loading, error, data } }">
-        <!-- Loading -->
-        <div v-if="loading" class="loading apollo">Loading...</div>
+      <li>
+        <!-- list all users -->
+        <ApolloQuery :query="require('../graphql/ListUsers.gql')">
+          <div slot-scope="{ result: { data } }">
+            <label for="select-name" class="label">Select user</label>
+            <template v-if="data">
+              <select v-model="selectedUser" id="select-name">
+                <option
+                  v-for="user of data.kgraph_users"
+                  :key="user.username"
+                  v-bind:value="user.username"
+                >
+                  {{ user.username }}
+                </option>
+              </select>
+              <div>Selected: {{ selectedUser }}</div>
+            </template>
+          </div>
+        </ApolloQuery>
+        <ApolloMutation
+          :mutation="require('../graphql/DeleteUser.gql')"
+          :variables="{
+            username: selectedUser,
+          }"
+          @done="selectedUser = 'Deleted'"
+        >
+          <template slot-scope="{ mutate, error }">
+            <!-- Mutation Trigger -->
+            <button @click="mutate()">Delete User</button>
+            <!-- Error -->
+            <p v-if="error">{{ error }}</p>
+          </template>
+        </ApolloMutation>
+      </li>
 
-        <!-- Error -->
-        <div v-else-if="error" class="error apollo">{{ error }}</div>
+      <li>
+        <!-- find users -->
+          <div class="form">
+            <label for="field-name" class="label">Find topics for user {{ selectedUser }}:</label>
+            <input
+              v-model="topicName"
+              placeholder="Type a topic name"
+              class="input"
+              id="field-name"
+            >
+          </div>
+          <ApolloQuery
+            :query="require('../graphql/SearchTopicsForUser.gql')"
+            :variables="{ topicsName: '%'+topicName+'%', username: selectedUser }"
+          >
+            <template slot-scope="{ result: { loading, error, data } }">
+              <!-- Loading -->
+              <div v-if="loading" class="loading apollo">Loading...</div>
 
-        <!-- Result -->
-        <div v-else-if="data" class="result apollo">{{ data }}</div>
+              <!-- Error -->
+              <div v-else-if="error" class="error apollo">{{ error }}</div>
 
-        <!-- No result -->
-        <div v-else class="no-result apollo">No result :(</div>
-      </template>
-    </ApolloQuery>
+              <!-- Result -->
+              <div v-else-if="data" class="result apollo">{{ data }}</div>
+
+              <!-- No result -->
+              <div v-else class="no-result apollo">No result :(</div>
+            </template>
+        </ApolloQuery>
+      </li>
+    </ul>
     
   </div>
 </template>
@@ -39,8 +98,11 @@
 export default {
   data () {
     return {
-      username: 'ci_test',
-      newMessage: '',
+      username: '',
+      selectedUser: '',
+      topicName: '',
+      newUser: '',
+      userAddedResult: '',
     }
   },
 
@@ -48,6 +110,10 @@ export default {
   },
 
   methods: {
+    onUserAdded: function (data) {
+      this.userAddedResult = "User created at: " + data.data.insert_kgraph_users.returning[0].created_at
+      this.selectedUser = data.data.insert_kgraph_users.returning[0].username
+    }
   },
 }
 </script>
@@ -98,5 +164,18 @@ label {
 
 .image-input {
   margin: 20px;
+}
+
+ul {
+  list-style-type: none;
+  text-align: center;
+  white-space: nowrap;
+}
+li {
+  display: table-cell;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+  padding: 50px;
 }
 </style>

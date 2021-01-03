@@ -71,7 +71,7 @@
         >
           <template slot-scope="{ mutate, error}">
             <!-- Mutation Trigger -->
-            <label class="label">Add new topic</label>
+            <label class="label">Add new root topic</label>
             <input v-model="topicName" type="text" placeholder="Topic name" />
             <button @click="mutate()">Add Topic</button>
             <!-- Error -->

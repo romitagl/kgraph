@@ -6,6 +6,12 @@
 
 This project aims at creating a knowledge database with hierarchical topic modelling.
 
+## GitHub Actions
+
+![Lint Code Base](https://github.com/romitagl/kgraph/workflows/Lint%20Code%20Base/badge.svg?branch=master)
+
+![CI](https://github.com/romitagl/kgraph/workflows/CI/badge.svg?branch=master)
+
 ## Dependencies
 
 - [Docker](https://www.docker.com)
@@ -16,13 +22,8 @@ This project aims at creating a knowledge database with hierarchical topic model
 
 - `backend` : backend services
   - `hasura` : GraphQL Server + PostgreSQL Database
-- `frontend` : frontend services - WIP
-
-## GitHub Actions
-
-![Lint Code Base](https://github.com/romitagl/kgraph/workflows/Lint%20Code%20Base/badge.svg?branch=master)
-
-![CI](https://github.com/romitagl/kgraph/workflows/CI/badge.svg?branch=master)
+- `frontend` : frontend services
+  - `vue` : Vue JS (version 2) framework + Apollo Graphql Client
 
 ## Developer Notes
 

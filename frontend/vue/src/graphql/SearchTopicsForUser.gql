@@ -1,0 +1,9 @@
+query searchTopicsForUser ($topicsName: String! $username: String!) {
+  kgraph_topics(where: {users_username: {_eq: $username} , name: {_ilike: $topicsName}}) {
+    id
+    name
+    content
+    parent_id
+    tags
+  }
+}

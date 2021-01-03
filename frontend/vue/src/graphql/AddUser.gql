@@ -1,0 +1,8 @@
+mutation addUser($username: String!) {
+  insert_kgraph_users(objects: {username: $username}) {
+    returning {
+      username
+      created_at
+    }
+  }
+}

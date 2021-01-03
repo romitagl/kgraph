@@ -1,0 +1,7 @@
+query getUser ($username: String!) {
+  kgraph_users(where: {username: {_eq: $username}}) {
+    username
+    display_name
+    created_at
+  }
+}

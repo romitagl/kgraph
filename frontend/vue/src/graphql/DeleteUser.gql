@@ -1,0 +1,5 @@
+mutation deleteUser($username: String!) {
+  delete_kgraph_users(where: {username: {_eq: $username}}) {
+    affected_rows
+  }
+}

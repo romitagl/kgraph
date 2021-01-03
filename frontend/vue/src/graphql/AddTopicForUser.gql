@@ -1,0 +1,7 @@
+mutation addTopicForUser ($topicsName: String! $username: String!) {
+  insert_kgraph_topics(objects: {name: $topicsName, users_username: $username}) {
+    returning {
+      created_at
+    }
+  }
+}

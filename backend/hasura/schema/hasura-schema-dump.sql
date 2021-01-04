@@ -100,7 +100,7 @@ COMMENT ON TABLE kgraph.users IS 'users table';
 --
 
 ALTER TABLE ONLY kgraph.topics
-    ADD CONSTRAINT topics_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT topics_pkey PRIMARY KEY (users_username, name);
 
 
 --

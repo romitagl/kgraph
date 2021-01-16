@@ -21,12 +21,11 @@ on:
     paths-ignore:
       # skip vendor's code checks
       - "backend/hasura/schema/**"
-
-  pull_request:
-    branches: [master]
-    paths-ignore:
-      # skip vendor's code checks
-      - "backend/hasura/schema/**"
+  # pull_request:
+  #   branches: [master]
+  #   paths-ignore:
+  #     # skip vendor's code checks
+  #     - "backend/hasura/schema/**"
 
 ###############
 # Set the Job #

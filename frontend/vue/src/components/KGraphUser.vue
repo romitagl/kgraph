@@ -69,11 +69,8 @@
               <div v-else-if="error" class="error apollo">{{ error }}</div>
 
               <!-- Result -->
-              <div v-else-if="data != null" class="result apollo">
-                {{ prevTopicName = topicName }}
-                <!-- {{ data }} -->
-                {{ getTopics(data) }} {{ buildVisGraph() }}
-              </div>
+              <div v-else-if="data" class="result apollo">{{ data }}</div>
+
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>
             </template>
@@ -96,23 +93,6 @@
         </div>
       </li>
     </ul>
-    <ul>
-      <li>
-        <div id="vis-topics-graph"></div> 
-      </li>
-      <li>
-        <div id="vuetreeselect">
-          Topics list:
-          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
-          <treeselect
-            :multiple="true"
-            :open-on-click="true"
-            :options="topics"
-          />
-        </div>
-      </li>
-    </ul>
-    
   </div>
 </template>
 

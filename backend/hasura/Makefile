@@ -22,7 +22,8 @@ stop:
 .PHONY: install_schema_and_metadata
 install_schema_and_metadata:
 	@echo "installing sql schema and graphql metadata"
-	until nc -z localhost 8080; do echo "waiting for Hasura service to be ready - retrying in 2 seconds..."; sleep 2; done
+	until docker-compose exec postgres pg_isready; do echo "waiting for Postgresql service to be ready - retrying in 10 seconds..."; sleep 10; done
+	until nc -z localhost 8080; do echo "waiting for Hasura service to be ready - retrying in 10 seconds..."; sleep 10; done
 	@echo $(shell echo `pwd` )
 	sh ./utils/import-schema-hasura.sh
 	sh -x ./utils/import-metadata-hasura.sh ./schema/hasura-metadata-dump.json

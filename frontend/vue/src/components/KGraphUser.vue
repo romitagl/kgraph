@@ -72,9 +72,8 @@
               <div v-else-if="data != null" class="result apollo">
                 {{ prevTopicName = topicName }}
                 <!-- {{ data }} -->
-                {{ getTopics(data) }}
+                {{ getTopics(data) }} {{ buildVisGraph() }}
               </div>
-
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>
             </template>

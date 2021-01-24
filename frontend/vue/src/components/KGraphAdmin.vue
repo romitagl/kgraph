@@ -158,10 +158,10 @@ label {
   margin-bottom: 6px;
 }
 
-.input {
+.input, input, option, select  {
   font-family: inherit;
   font-size: inherit;
-  border: solid 2px #ccc;
+  border: solid 2px rgb(136, 126, 126);
   border-radius: 3px;
 }
 

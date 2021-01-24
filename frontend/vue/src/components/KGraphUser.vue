@@ -82,7 +82,36 @@
     </ul>
     <ul>
       <li>
-        <div id="vis-topics-graph"></div> 
+        <!-- https://vuetifyjs.com/en/api/v-menu/ -->
+        <v-menu
+          absolute
+          :position-x="0"
+          :position-y="0"
+        >
+          <!-- https://vuejs.org/v2/api/#v-on -->
+          <template v-slot:activator="{ on }">
+            <div id="vis-topics-graph" v-on:click.right="on.click"></div>
+          </template>
+
+          <v-list>
+            <template v-if="selectedNodeID == ''">
+              <v-btn text @click="onAddNode">Add Node</v-btn>
+            </template>
+            <template v-if="selectedNodeID != ''">
+              <v-list-item>
+                <v-list-item-title>Delete Node</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title>Edit Node</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title>Add Child</v-list-item-title>
+              </v-list-item>
+            </template>
+          </v-list>
+        </v-menu>
+
+        <!-- <pre id="eventSpanContent"></pre> -->
       </li>
       <li>
         <div id="vuetreeselect">
@@ -108,7 +137,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import { Network } from "vis-network/peer/esm/vis-network";
 import { DataSet } from "vis-data/peer/esm/vis-data"
 
-// to consider: https://doc.mindelixir.ink/index.html - https://codesandbox.io/s/hygz7?file=/src/App.vue
+// https://vuetifyjs.com
 
 function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
   // console.log(kgraph_topics)
@@ -119,6 +148,7 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
       const element = {
         id: topic.id,
         label: topic.name,
+        title: topic.content
       }
       if (topic.parent_id != null) {
         // console.log("topic id:" + topic.id + " parent: " + topic.parent_id)
@@ -151,7 +181,30 @@ export default {
       nodes: new DataSet([]),
       // edges: new DataSet([{ id: "1", from: "1", to: "2" }]),
       edges: new DataSet([]),
-      displayOptions: { }
+      displayOptions: {
+        configure: {
+          enabled: false // https://visjs.github.io/vis-network/docs/network/configure.html
+        },
+        interaction: {
+          selectable: true,
+          hover: true,
+        },
+        manipulation: {
+          enabled: true,
+          initiallyActive: true,
+          addNode: function(nodeData,callback) {
+            nodeData.label = 'hello world';
+            callback(nodeData);
+          },
+          editNode: function (data, callback) {
+            console.log("editNode: ", data, callback)
+            data.label = 'edited';
+            callback(data);
+          },
+        }
+      },
+      // right-click
+      selectedNodeID: '',
     }
   },
   created() {
@@ -182,13 +235,33 @@ export default {
       this.topics = topicsTree;
       this.topicsRelations = topicsRelations;
     },
+    onSelectNode(event) {
+      const node = this.nodes.get(event.nodes[0]);
+      console.log("onSelectNode event: ", event, " node: ", node)
+    },
+    onAddNode(){
+      // alert("Add Node!"); 
+      this.network.addNodeMode();
+    },
+    onEditNode(event) {
+      const node = this.nodes.get(event.nodes[0]);
+      console.log("onEditNode event: ", event, " node: ", node)
+    },
+    onNetworkContext(params) {
+      console.log("onContext:", params)
+      params.event.preventDefault();
+      params.event = "[original event]";
+      // document.getElementById("eventSpanContent").innerText = JSON.stringify(params, null, 4 );
+      this.selectedNodeID = params.nodes.length > 0 ? params.nodes[0] : '';
+      console.log("selectedNodeID:", this.selectedNodeID)
+    },
     buildVisGraph() {
       console.log("buildVisGraph")
       if (this.network) {
-          this.network.destroy();
-          this.network = null;
-          // this.nodes.clear();
-          // this.edges.clear();
+        this.network.destroy();
+        this.network = null;
+        this.nodes.clear();
+        this.edges.clear();
       } 
       this.nodes = new DataSet(this.topics)
       this.edges = new DataSet(this.topicsRelations);
@@ -198,9 +271,15 @@ export default {
       };
       const element = document.getElementById('vis-topics-graph');
       this.network = new Network(element, data, this.displayOptions);
-      // this.network.enableEditMode();
+      this.network.enableEditMode();
       // this.network.stopSimulation();
-      // network.on('selectNode', event => this.onSelectNode(network, event));
+      // https://github.com/visjs/vis-network/blob/master/examples/network/events/interactionEvents.html
+      this.network.on('selectNode', event => this.onSelectNode(event));
+      this.network.on("doubleClick", function(data) {
+        console.log("doubleClick: ", data)
+      });
+      // Fired when the user click on the canvas with the right mouse button. The right mouse button does not select by default. You can use the method getNodeAt to select the node if you want.
+      this.network.on("oncontext", this.onNetworkContext)
     },
   },
 }
@@ -219,10 +298,10 @@ label {
   margin-bottom: 6px;
 }
 
-.input {
+.input, input, option, select {
   font-family: inherit;
   font-size: inherit;
-  border: solid 2px #ccc;
+  border: solid 2px rgb(136, 126, 126);
   border-radius: 3px;
 }
 
@@ -275,4 +354,5 @@ li {
   height: 400px;
   border: 1px solid lightgray;
 }
+
 </style>

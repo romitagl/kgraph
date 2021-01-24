@@ -17,6 +17,9 @@ cd vue ; vue upgrade --next
 # to add Apollo Graphql integration: https://apollo.vuejs.org/guide/installation.html#vue-cli-plugin
 vue add apollo
 npm install --save vue-apollo graphql apollo-client apollo-link apollo-link-http apollo-cache-inmemory graphql-tag
+
+# to add Vuetify https://vuetifyjs.com/
+cd vue ; vue add vuetify
 ```
 
 🎉  Successfully created project vue.

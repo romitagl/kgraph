@@ -115,7 +115,7 @@
                           <v-text-field
                             label="Topic Name"
                             required
-                            v-model="topicName"
+                            v-model="addTopicName"
                           ></v-text-field>
                         </v-col>
                         </v-row>
@@ -124,7 +124,7 @@
                           <v-text-field
                             label="Content"
                             required
-                            v-model="topicContent"
+                            v-model="addTopicContent"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -245,16 +245,11 @@ export default {
           enabled: true,
           initiallyActive: true,
           addNode: function(nodeData,callback) {
-            nodeData.id = this.topicAddedResult,
-            nodeData.label = this.topicName,
-            nodeData.title = this.topicContent
+            console.log("addNode: ", nodeData)
             callback(nodeData);
           },
           editNode: function (data, callback) {
             console.log("editNode: ", data, callback)
-            data.id = this.topicAddedResult,
-            data.label = this.topicName,
-            data.title = this.topicContent
             callback(data);
           },
         }
@@ -262,6 +257,8 @@ export default {
       // right-click
       selectedNodeID: '',
       dialogAdd: false,
+      addTopicName: '',
+      addTopicContent: '',
     }
   },
   created() {
@@ -297,25 +294,47 @@ export default {
       console.log("onSelectNode event: ", event, " node: ", node)
     },
     async onAddNode(){ 
-      if (this.topicName == '') {
+      if (this.addTopicName == '') {
         alert("Fill in all the required fields!");
-        return
+        return;
       }
-      const result = await this.$apollo.mutate({
-        mutation: require('../graphql/AddTopicForUser.gql'),
-        variables: {
-          topicsName: this.topicName,
-          content: this.topicContent,
-          username: this.selectedUser
-        }
-      })
+
+      var result = null;
+      try {
+        result = await this.$apollo.mutate({
+          mutation: require('../graphql/AddTopicForUser.gql'),
+          variables: {
+            topicsName: this.addTopicName,
+            content: this.addTopicContent,
+            username: this.selectedUser
+          }
+        })
+      }
+      catch (error) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
       // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
       this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
       // close the add Dialog
       this.dialogAdd = false;
-      // reset the search
-      this.topicName = '';
-      this.network.addNodeMode();
+
+      // add new topic to the list
+      const element = {
+        id: this.topicAddedResult,
+        label: this.addTopicName,
+        title: this.addTopicContent
+      }
+      this.topics.push(element);
+
+      // reset fields
+      this.addTopicName = '';
+      this.addTopicContent = '';
+
+      // redraw
+      this.buildVisGraph();
     },
     onEditNode(event) {
       const node = this.nodes.get(event.nodes[0]);
@@ -337,7 +356,8 @@ export default {
         this.nodes.clear();
         this.edges.clear();
       } 
-      this.nodes = new DataSet(this.topics)
+      this.nodes = new DataSet(this.topics);
+      console.log("topics:", this.topics);
       this.edges = new DataSet(this.topicsRelations);
       let data = {
         nodes: this.nodes,

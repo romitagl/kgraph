@@ -103,7 +103,7 @@
                 max-width="500px"
               >
               <template v-slot:activator="{ on }">
-                <v-btn id="btn-add-topic" v-on:click="on.click">Add Topic</v-btn>
+                <v-btn id="btn-add-topic" v-on:click="on.click" v-show="btnAddTopic">Add Topic</v-btn>
               </template>
                 <v-card>
                   <v-card-title>
@@ -133,14 +133,14 @@
                     <v-btn
                       color="primary"
                       text
-                      @click="dialogAdd = false;"
+                      @click="dialogAdd = false; btnAddTopic=false"
                     >
                       Cancel
                     </v-btn>
                     <v-btn
                       color="primary"
                       text
-                      @click="onAddNode();"
+                      @click="onAddNode(); btnAddTopic=false"
                     >
                       Add
                     </v-btn>
@@ -199,7 +199,9 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
       const element = {
         id: topic.id,
         label: topic.name,
-        title: topic.content
+        title: topic.content,
+        // https://visjs.github.io/vis-network/docs/network/nodes.html
+        shape: "ellipse",
       }
       if (topic.parent_id != null) {
         // console.log("topic id:" + topic.id + " parent: " + topic.parent_id)
@@ -240,6 +242,8 @@ export default {
         interaction: {
           selectable: true,
           hover: true,
+          tooltipDelay: 100,
+          zoomView: false,
         },
         manipulation: {
           enabled: true,
@@ -254,9 +258,10 @@ export default {
           },
         }
       },
-      // right-click
+      // right-click graph topics management
       selectedNodeID: '',
       dialogAdd: false,
+      btnAddTopic: true,
       addTopicName: '',
       addTopicContent: '',
     }
@@ -347,6 +352,7 @@ export default {
       // document.getElementById("eventSpanContent").innerText = JSON.stringify(params, null, 4 );
       this.selectedNodeID = params.nodes.length > 0 ? params.nodes[0] : '';
       console.log("selectedNodeID:", this.selectedNodeID)
+      this.btnAddTopic = true;
     },
     buildVisGraph() {
       console.log("buildVisGraph")
@@ -355,7 +361,8 @@ export default {
         this.network = null;
         this.nodes.clear();
         this.edges.clear();
-      } 
+      }
+      // https://visjs.github.io/vis-data/data/dataset.html
       this.nodes = new DataSet(this.topics);
       console.log("topics:", this.topics);
       this.edges = new DataSet(this.topicsRelations);

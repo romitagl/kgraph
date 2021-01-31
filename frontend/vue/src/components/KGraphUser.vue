@@ -29,6 +29,7 @@
           :mutation="require('../graphql/AddTopicForUser.gql')"
           :variables="{
             topicsName: topicName,
+            content: topicContent,
             username: selectedUser
           }"
           @done="onTopicAdded"
@@ -37,6 +38,7 @@
             <!-- Mutation Trigger -->
             <label class="label">Add new root topic</label>
             <input v-model="topicName" type="text" placeholder="Topic name" />
+            <input v-model="topicContent" type="text" placeholder="Topic content" />
             <button @click="mutate()">Add Topic</button>
             <!-- Error -->
             <p v-if="error">{{ error }}</p>
@@ -95,7 +97,56 @@
 
           <v-list>
             <template v-if="selectedNodeID == ''">
-              <v-btn text @click="onAddNode">Add Node</v-btn>
+              <!-- <v-btn text @click="onAddNode">Add Node</v-btn> --> 
+              <v-dialog
+                v-model="dialogAdd"
+                max-width="500px"
+              >
+              <template v-slot:activator="{ on }">
+                <v-btn id="btn-add-topic" v-on:click="on.click">Add Topic</v-btn>
+              </template>
+                <v-card>
+                  <v-card-title>
+                    Topic Details
+                  </v-card-title>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="6">
+                          <v-text-field
+                            label="Topic Name"
+                            required
+                            v-model="topicName"
+                          ></v-text-field>
+                        </v-col>
+                        </v-row>
+                        <v-row>
+                        <v-col cols="12">
+                          <v-text-field
+                            label="Content"
+                            required
+                            v-model="topicContent"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  <v-card-actions>
+                    <v-btn
+                      color="primary"
+                      text
+                      @click="dialogAdd = false;"
+                    >
+                      Cancel
+                    </v-btn>
+                    <v-btn
+                      color="primary"
+                      text
+                      @click="onAddNode();"
+                    >
+                      Add
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </template>
             <template v-if="selectedNodeID != ''">
               <v-list-item>
@@ -170,6 +221,7 @@ export default {
       username: '',
       selectedUser: '',
       topicName: '',
+      topicContent: '',
       prevTopicName: ' ', // developer note -> initialized as space or not empty string
       topicAddedResult: '',
       // vue-treeselect
@@ -193,18 +245,23 @@ export default {
           enabled: true,
           initiallyActive: true,
           addNode: function(nodeData,callback) {
-            nodeData.label = 'hello world';
+            nodeData.id = this.topicAddedResult,
+            nodeData.label = this.topicName,
+            nodeData.title = this.topicContent
             callback(nodeData);
           },
           editNode: function (data, callback) {
             console.log("editNode: ", data, callback)
-            data.label = 'edited';
+            data.id = this.topicAddedResult,
+            data.label = this.topicName,
+            data.title = this.topicContent
             callback(data);
           },
         }
       },
       // right-click
       selectedNodeID: '',
+      dialogAdd: false,
     }
   },
   created() {
@@ -239,8 +296,25 @@ export default {
       const node = this.nodes.get(event.nodes[0]);
       console.log("onSelectNode event: ", event, " node: ", node)
     },
-    onAddNode(){
-      // alert("Add Node!"); 
+    async onAddNode(){ 
+      if (this.topicName == '') {
+        alert("Fill in all the required fields!");
+        return
+      }
+      const result = await this.$apollo.mutate({
+        mutation: require('../graphql/AddTopicForUser.gql'),
+        variables: {
+          topicsName: this.topicName,
+          content: this.topicContent,
+          username: this.selectedUser
+        }
+      })
+      // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
+      this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
+      // close the add Dialog
+      this.dialogAdd = false;
+      // reset the search
+      this.topicName = '';
       this.network.addNodeMode();
     },
     onEditNode(event) {

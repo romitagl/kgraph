@@ -11,7 +11,7 @@ dependencies:
 
 .PHONY: start
 start:
-	. ./utils/check-env.sh; verifiy_hasura_env
+	. ./utils/check-env.sh; verify_hasura_env
 	docker-compose -f ./docker-compose.yaml up -d graphql-engine
 	docker-compose logs -f -t 2>&1 | tee docker-compose.log &
 

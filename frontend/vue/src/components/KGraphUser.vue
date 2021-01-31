@@ -103,7 +103,7 @@
                 max-width="500px"
               >
               <template v-slot:activator="{ on }">
-                <v-btn id="btn-add-topic" v-on:click="on.click">Add Topic</v-btn>
+                <v-btn id="btn-add-topic" v-on:click="on.click" v-show="btnAddTopic">Add Topic</v-btn>
               </template>
                 <v-card>
                   <v-card-title>
@@ -115,7 +115,7 @@
                           <v-text-field
                             label="Topic Name"
                             required
-                            v-model="topicName"
+                            v-model="addTopicName"
                           ></v-text-field>
                         </v-col>
                         </v-row>
@@ -124,7 +124,7 @@
                           <v-text-field
                             label="Content"
                             required
-                            v-model="topicContent"
+                            v-model="addTopicContent"
                           ></v-text-field>
                         </v-col>
                       </v-row>
@@ -133,14 +133,14 @@
                     <v-btn
                       color="primary"
                       text
-                      @click="dialogAdd = false;"
+                      @click="dialogAdd = false; btnAddTopic=false"
                     >
                       Cancel
                     </v-btn>
                     <v-btn
                       color="primary"
                       text
-                      @click="onAddNode();"
+                      @click="onAddNode(); btnAddTopic=false"
                     >
                       Add
                     </v-btn>
@@ -199,7 +199,9 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
       const element = {
         id: topic.id,
         label: topic.name,
-        title: topic.content
+        title: topic.content,
+        // https://visjs.github.io/vis-network/docs/network/nodes.html
+        shape: "ellipse",
       }
       if (topic.parent_id != null) {
         // console.log("topic id:" + topic.id + " parent: " + topic.parent_id)
@@ -240,28 +242,28 @@ export default {
         interaction: {
           selectable: true,
           hover: true,
+          tooltipDelay: 100,
+          zoomView: false,
         },
         manipulation: {
           enabled: true,
           initiallyActive: true,
           addNode: function(nodeData,callback) {
-            nodeData.id = this.topicAddedResult,
-            nodeData.label = this.topicName,
-            nodeData.title = this.topicContent
+            console.log("addNode: ", nodeData)
             callback(nodeData);
           },
           editNode: function (data, callback) {
             console.log("editNode: ", data, callback)
-            data.id = this.topicAddedResult,
-            data.label = this.topicName,
-            data.title = this.topicContent
             callback(data);
           },
         }
       },
-      // right-click
+      // right-click graph topics management
       selectedNodeID: '',
       dialogAdd: false,
+      btnAddTopic: true,
+      addTopicName: '',
+      addTopicContent: '',
     }
   },
   created() {
@@ -297,25 +299,47 @@ export default {
       console.log("onSelectNode event: ", event, " node: ", node)
     },
     async onAddNode(){ 
-      if (this.topicName == '') {
+      if (this.addTopicName == '') {
         alert("Fill in all the required fields!");
-        return
+        return;
       }
-      const result = await this.$apollo.mutate({
-        mutation: require('../graphql/AddTopicForUser.gql'),
-        variables: {
-          topicsName: this.topicName,
-          content: this.topicContent,
-          username: this.selectedUser
-        }
-      })
+
+      var result = null;
+      try {
+        result = await this.$apollo.mutate({
+          mutation: require('../graphql/AddTopicForUser.gql'),
+          variables: {
+            topicsName: this.addTopicName,
+            content: this.addTopicContent,
+            username: this.selectedUser
+          }
+        })
+      }
+      catch (error) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
       // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
       this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
       // close the add Dialog
       this.dialogAdd = false;
-      // reset the search
-      this.topicName = '';
-      this.network.addNodeMode();
+
+      // add new topic to the list
+      const element = {
+        id: this.topicAddedResult,
+        label: this.addTopicName,
+        title: this.addTopicContent
+      }
+      this.topics.push(element);
+
+      // reset fields
+      this.addTopicName = '';
+      this.addTopicContent = '';
+
+      // redraw
+      this.buildVisGraph();
     },
     onEditNode(event) {
       const node = this.nodes.get(event.nodes[0]);
@@ -328,6 +352,7 @@ export default {
       // document.getElementById("eventSpanContent").innerText = JSON.stringify(params, null, 4 );
       this.selectedNodeID = params.nodes.length > 0 ? params.nodes[0] : '';
       console.log("selectedNodeID:", this.selectedNodeID)
+      this.btnAddTopic = true;
     },
     buildVisGraph() {
       console.log("buildVisGraph")
@@ -336,8 +361,9 @@ export default {
         this.network = null;
         this.nodes.clear();
         this.edges.clear();
-      } 
-      this.nodes = new DataSet(this.topics)
+      }
+      // https://visjs.github.io/vis-data/data/dataset.html
+      this.nodes = new DataSet(this.topics);
       this.edges = new DataSet(this.topicsRelations);
       let data = {
         nodes: this.nodes,

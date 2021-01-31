@@ -364,7 +364,6 @@ export default {
       }
       // https://visjs.github.io/vis-data/data/dataset.html
       this.nodes = new DataSet(this.topics);
-      console.log("topics:", this.topics);
       this.edges = new DataSet(this.topicsRelations);
       let data = {
         nodes: this.nodes,

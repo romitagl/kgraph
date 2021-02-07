@@ -1,8 +1,10 @@
 name: CI
 
 on:
-  pull_request_review_comment:
-    types: [ created, edited ]
+  issue_comment:
+    types: [ created ]
+  # pull_request_review_comment:
+  #   types: [ created, edited ]
   workflow_run:
     workflows: ['Lint Code Base']
     branches:
@@ -22,7 +24,7 @@ on:
 jobs:
   run-ci-tests:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} || (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '/run-ci'))
+    if: (github.event.workflow_run.conclusion == 'success' && github.event_name != 'issue_comment' )|| ((github.event_name == 'pull_request_review_comment' || contains(github.event.comment.html_url, '/pull/')) && contains(github.event.comment.body, '/run-ci'))
     env:
       HASURA_GRAPHQL_ADMIN_SECRET: ${{ secrets.CI_HASURA_GRAPHQL_ADMIN_SECRET }}
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"

@@ -1,0 +1,5 @@
+mutation deleteTopicForUser($topicID: uuid!, $username: String!) {
+  delete_kgraph_topics(where: {users_username: {_eq: $username}, id: {_eq: $topicID}}) {
+    affected_rows
+  }
+}

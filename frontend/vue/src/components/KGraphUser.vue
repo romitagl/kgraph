@@ -23,31 +23,9 @@
       </li>
     </ul>
     <ul>
-      <li>
-        <!-- add topic for user -->
-        <ApolloMutation
-          :mutation="require('../graphql/AddTopicForUser.gql')"
-          :variables="{
-            topicsName: topicName,
-            content: topicContent,
-            username: selectedUser
-          }"
-          @done="onTopicAdded"
-        >
-          <template slot-scope="{ mutate, error}">
-            <!-- Mutation Trigger -->
-            <label class="label">Add new root topic</label>
-            <input v-model="topicName" type="text" placeholder="Topic name" />
-            <input v-model="topicContent" type="text" placeholder="Topic content" />
-            <button @click="mutate()">Add Topic</button>
-            <!-- Error -->
-            <p v-if="error">{{ error }}</p>
-            <!-- result -->
-            <p> {{ topicAddedResult }}</p>
-          </template>
-        </ApolloMutation>
-      </li>
-      <li>
+    <table style="width:100%">
+    <tr>
+      <td>
         <!-- search topic for user -->
           <div class="form">
             <label for="field-name" class="label">Find topics for user {{ selectedUser }}:</label>
@@ -80,7 +58,20 @@
               <div v-else class="no-result apollo">No result :(</div>
             </template>
         </ApolloQuery>
-      </li>
+      </td>
+      <td max-width="500px" width="500px">
+        <div id="vuetreeselect">
+          Topics list:
+          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
+          <treeselect
+            :multiple="false"
+            :open-on-click="true"
+            :options="topics"
+          />
+        </div>
+      </td>
+    </tr>
+    </table>
     </ul>
     <ul>
       <li>
@@ -96,14 +87,16 @@
           </template>
 
           <v-list>
-            <template v-if="selectedNodeID == ''">
               <!-- <v-btn text @click="onAddNode">Add Node</v-btn> --> 
               <v-dialog
                 v-model="dialogAdd"
                 max-width="500px"
               >
               <template v-slot:activator="{ on }">
-                <v-btn id="btn-add-topic" v-on:click="on.click" v-show="btnAddTopic">Add Topic</v-btn>
+                <v-list-item v-show="btnAddTopic">
+                  <v-btn color="primary" text v-on:click="on.click" v-show="btnAddTopic" v-if="selectedNodeID == ''">Add Topic</v-btn>
+                  <v-btn color="primary" text v-on:click="on.click" v-show="btnAddTopic" v-if="selectedNodeID != ''" @click="addTopicName=''; addTopicContent=''">Add Child Topic</v-btn>
+                </v-list-item>
               </template>
                 <v-card>
                   <v-card-title>
@@ -134,45 +127,61 @@
                       color="primary"
                       text
                       @click="dialogAdd = false; btnAddTopic=false"
-                    >
-                      Cancel
-                    </v-btn>
+                    >Cancel</v-btn>
                     <v-btn
                       color="primary"
                       text
-                      @click="onAddNode(); btnAddTopic=false"
-                    >
-                      Add
-                    </v-btn>
+                      @click="onAddNode(selectedNodeID != ''); btnAddTopic=false"
+                    >Add</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-            </template>
             <template v-if="selectedNodeID != ''">
-              <v-list-item>
-                <v-list-item-title>Delete Node</v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-title>Edit Node</v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-title>Add Child</v-list-item-title>
+              <v-list-item v-show="btnAddTopic">
+                <v-btn 
+                  color="primary"
+                  text
+                  v-show="btnAddTopic"
+                  @click="onDeleteNode();"
+                >Delete Node</v-btn>
               </v-list-item>
             </template>
           </v-list>
         </v-menu>
 
         <!-- <pre id="eventSpanContent"></pre> -->
-      </li>
-      <li>
-        <div id="vuetreeselect">
-          Topics list:
-          <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
-          <treeselect
-            :multiple="true"
-            :open-on-click="true"
-            :options="topics"
-          />
+        <div>
+          <input v-model="addTopicName" type="text" placeholder="Topic name" />
+          <!-- <p style="white-space: pre-line;">{{ message }}</p> -->
+          <br>
+          <textarea v-model="addTopicContent" placeholder="topic content"></textarea>
+          <br>
+          <template v-if="selectedNodeID == ''">
+            <v-btn color="primary" text @click="onAddNode(false);" >Add Topic</v-btn>
+          </template>
+          <template v-if="selectedNodeID != ''">
+            <v-list-item>
+              <v-btn 
+                color="primary"
+                text
+                @click="onDeleteNode();"
+              >Delete Node</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn 
+                color="primary"
+                text
+                @click="onUpdateNode();"
+              >Update Node</v-btn>
+            </v-list-item>
+            <v-list-item>
+              <v-btn 
+                color="primary"
+                text
+                @click="onAddNode(true);"
+              >Add Child</v-btn>
+            </v-list-item>
+          </template>
         </div>
       </li>
     </ul>
@@ -200,13 +209,13 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
         id: topic.id,
         label: topic.name,
         title: topic.content,
+        parent_id : topic.parent_id,
         // https://visjs.github.io/vis-network/docs/network/nodes.html
         shape: "ellipse",
       }
       if (topic.parent_id != null) {
         // console.log("topic id:" + topic.id + " parent: " + topic.parent_id)
         const relation = {
-          id: topic.id,
           from: topic.id,
           to: topic.parent_id
         }
@@ -283,10 +292,10 @@ export default {
   components: { Treeselect },
   methods: {
     onTopicAdded: function (data) {
-      this.topicAddedResult = "Topic created at: " + data.data.insert_kgraph_topics.returning[0].created_at
+      this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
     },
     getTopics(data) {
-      console.log("---- getTopics() ---");
+      console.log("getTopics()");
       console.log(data);
       let topicsTree = [];
       let topicsRelations = [];
@@ -297,8 +306,97 @@ export default {
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
       console.log("onSelectNode event: ", event, " node: ", node)
+
+      this.selectedNodeID = node.id;
+      const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
+      console.log("onSelectNode - topic:", topic)
+      this.addTopicName = topic.label;
+      this.addTopicContent = topic.title;
     },
-    async onAddNode(){ 
+    async onUpdateNode(){ 
+      console.log("onUpdateNode - nodeID:", this.selectedNodeID);
+      if (this.addTopicName == '') {
+        alert("Fill in all the required fields!");
+        return;
+      }
+
+      try {
+        await this.$apollo.mutate({
+          mutation: require('../graphql/UpdateTopicForUser.gql'),
+          variables: {
+            topicName: this.addTopicName,
+            content: this.addTopicContent,
+            username: this.selectedUser,
+            id: this.selectedNodeID
+          }
+        })
+      }
+      catch (error) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      // update element for the list
+      for (let position = 0; position < this.topics.length; position++) {
+        if ( this.topics[position].id == this.selectedNodeID) {
+          this.topics[position].label = this.addTopicName;
+          this.topics[position].title = this.addTopicContent;
+        }
+      }
+
+      // redraw
+      this.buildVisGraph();
+    },
+    async onDeleteNode(){ 
+      console.log("onDeleteNode - nodeID:", this.selectedNodeID)
+      if (this.selectedNodeID == '') {
+        alert("No selected node found!");
+        return;
+      }
+      try {
+        await this.$apollo.mutate({
+          mutation: require('../graphql/DeleteTopicForUser.gql'),
+          variables: {
+            topicID: this.selectedNodeID,
+            username: this.selectedUser
+          }
+        })
+      }
+      catch (error) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      // remove element from the topic list
+      let parent_id = null;
+      for (let position = 0; position < this.topics.length; position++) {
+        if ( this.topics[position].id == this.selectedNodeID) {
+            parent_id = this.topics[position].parent_id;
+            this.topics.splice(position, 1);
+            break;
+        }
+      }
+      // remove relation for child topic
+      if (parent_id != null) {
+        for (let position = 0; position < this.topicsRelations.length; position++) {
+          if ( this.topicsRelations[position].from == this.selectedNodeID && this.topicsRelations[position].to == parent_id) {
+              this.topicsRelations.splice(position, 1); 
+              break;
+          }
+        }
+      }
+
+      // reset fields
+      this.selectedNodeID = '';
+      this.addTopicName = '';
+      this.addTopicContent = '';
+
+      // redraw
+      this.buildVisGraph();
+    },
+    async onAddNode(child){ 
       if (this.addTopicName == '') {
         alert("Fill in all the required fields!");
         return;
@@ -311,7 +409,8 @@ export default {
           variables: {
             topicsName: this.addTopicName,
             content: this.addTopicContent,
-            username: this.selectedUser
+            username: this.selectedUser,
+            parent_id: (child ? this.selectedNodeID : null)
           }
         })
       }
@@ -330,9 +429,18 @@ export default {
       const element = {
         id: this.topicAddedResult,
         label: this.addTopicName,
-        title: this.addTopicContent
+        title: this.addTopicContent,
+        parent_id: (child ? this.selectedNodeID : null)
       }
       this.topics.push(element);
+      // add new relation for child topics
+      if (child) {
+        const relation = {
+          from: element.id,
+          to: element.parent_id
+        }
+        this.topicsRelations.push(relation);
+      }
 
       // reset fields
       this.addTopicName = '';
@@ -433,12 +541,12 @@ label {
   margin: 20px;
 }
 
-ul {
+td, ul {
   list-style-type: none;
   text-align: center;
   white-space: nowrap;
 }
-li {
+tr, li {
   display: table-cell;
   position: relative;
   box-sizing: border-box;

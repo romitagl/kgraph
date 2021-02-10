@@ -30,8 +30,16 @@ jobs:
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
 
     steps:
-      - name: Clone Repo
-        uses: actions/checkout@v1
+      - name: Clone Repo - PR
+        if: github.event_name == 'issue_comment'
+        uses: actions/checkout@v2
+        with:
+          ref: ${{format('refs/pull/{0}/head', github.event.issue.number )}}
+          # ref: refs/heads/${{ github.head_ref }} # Or: ${{ github.event.pull_request.head.ref }}
+
+      - name: Clone Repo - Master
+        if: github.event_name != 'issue_comment'
+        uses: actions/checkout@v2
 
       - name: Run CI Tests
         shell: bash

@@ -1,3 +1,6 @@
+-- DEVELOPER CHANGES - FIX gen_random_uuid() does not exist:
+CREATE EXTENSION IF NOT EXISTS pgcrypto; -- to use gen_random_uuid
+
 --
 -- PostgreSQL database dump
 --
@@ -150,4 +153,3 @@ ALTER TABLE ONLY kgraph.topics
 --
 -- PostgreSQL database dump complete
 --
-

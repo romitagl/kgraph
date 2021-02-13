@@ -14,7 +14,7 @@ function verify_hasura_env () {
   local -r set_defaults=$1
 
   if [[ "${set_defaults}" == "true" ]]; then
-    # set console default value to false for the frontend check
+    # if console not set use false as default for the frontend check
     HASURA_GRAPHQL_ENABLE_CONSOLE=${HASURA_GRAPHQL_ENABLE_CONSOLE:-"false"}
   fi
 

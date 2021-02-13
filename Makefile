@@ -1,5 +1,8 @@
+# It's necessary to set this because some environments don't link sh -> bash.
+SHELL := /usr/bin/env bash
+
 .PHONY: ci
 ci:
-	# developer note: implement this target only for the subfolders (exclude the root Makefile)
-	# searches for all Makefile from the root directory and runs the make ci target on each entry
-	find . -name "Makefile" -not -path "./Makefile" | sed -e "s/Makefile//g" | xargs -I {} make --directory={} ci
+	# searches for all Makefile files from the root directory and runs the make ci target on each entry
+	# excludes the node_modules folder and root Makefile
+	find . -type f -name "Makefile" -not -path "./Makefile" -not -path "*/node_modules/*" -exec dirname {} \; | xargs -I {} make --directory={} ci

@@ -1,6 +1,23 @@
 #!/bin/bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 function verify_hasura_env () {
+
+  if [[ $# -ne 1 ]]; then
+    printf "error - verify_hasura_env() - wrong input parameters - expected set_defaults: true/false\n"
+    exit 1
+  fi
+
+  local -r set_defaults=$1
+
+  if [[ "${set_defaults}" == "true" ]]; then
+    # set console default value to false for the frontend check
+    HASURA_GRAPHQL_ENABLE_CONSOLE=${HASURA_GRAPHQL_ENABLE_CONSOLE:-"false"}
+  fi
+
   # developer note - add env variables to check here:
   ENV_VARIABLES=(HASURA_GRAPHQL_ADMIN_SECRET HASURA_GRAPHQL_ENABLE_CONSOLE)
 
@@ -13,7 +30,7 @@ function verify_hasura_env () {
   # script depends on docker-compose - check for existence
   cmd=docker-compose
   if ! which "${cmd}" >/dev/null; then
-    echo "Can't find ${cmd} in PATH, please fix and retry"
+    echo "can't find ${cmd} in PATH, please fix and retry"
     exit 1
   fi
 }

@@ -26,8 +26,9 @@ cd vue ; vue add vuetify
 👉  Get started with the following commands:
 
 ```bash
+cd vue
 # check env and - npm run serve
-cd vue && make start
+make start
 ```
 
  To change the default port from 8080 to 5000: `npm run serve -- --port 5000` or configure the file `vue.config.js`:

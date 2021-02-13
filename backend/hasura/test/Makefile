@@ -1,8 +1,4 @@
-SHELL := /bin/bash
-
-.PHONY: ci
-ci:
-	@echo "ci target is run from the parent Makefile"
+include ../../../common/common.mk
 
 .PHONY: graphql
 graphql:

@@ -131,7 +131,7 @@
                     <v-btn
                       color="primary"
                       text
-                      @click="onAddNode(selectedNodeID != ''); btnAddTopic=false"
+                      @click="onAddNode(selectedNodeID != '', addTopicName, addTopicContent); btnAddTopic=false"
                     >Add</v-btn>
                   </v-card-actions>
                 </v-card>
@@ -151,37 +151,53 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <input v-model="addTopicName" type="text" placeholder="Topic name" />
-          <!-- <p style="white-space: pre-line;">{{ message }}</p> -->
-          <br>
-          <textarea v-model="addTopicContent" placeholder="topic content"></textarea>
-          <br>
-          <template v-if="selectedNodeID == ''">
-            <v-btn color="primary" text @click="onAddNode(false);" >Add Topic</v-btn>
-          </template>
-          <template v-if="selectedNodeID != ''">
-            <v-list-item>
-              <v-btn 
-                color="primary"
-                text
-                @click="onDeleteNode();"
-              >Delete Node</v-btn>
-            </v-list-item>
-            <v-list-item>
-              <v-btn 
-                color="primary"
-                text
-                @click="onUpdateNode();"
-              >Update Node</v-btn>
-            </v-list-item>
-            <v-list-item>
-              <v-btn 
-                color="primary"
-                text
-                @click="onAddNode(true);"
-              >Add Child</v-btn>
-            </v-list-item>
-          </template>
+          <v-card>
+            <v-card-title>
+              Topic Details
+            </v-card-title>
+              <v-container>
+                <v-row>
+                  <v-col cols="6">
+                    <v-text-field
+                      label="Topic Name"
+                      required
+                      v-model="addTopicName"
+                    ></v-text-field>
+                  </v-col>
+                  </v-row>
+                  <v-row>
+                  <v-col cols="12">
+                    <v-text-field
+                      label="Content"
+                      required
+                      v-model="addTopicContent"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            <v-card-actions>
+              <template v-if="selectedNodeID == ''">
+                <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
+              </template>
+              <template v-if="selectedNodeID != ''">
+                <v-list-item>
+                  <v-btn 
+                    color="primary"
+                    text
+                    @click="onDeleteNode();"
+                  >Delete Node</v-btn>
+                </v-list-item>
+                <v-list-item>
+                  <v-btn 
+                    color="primary"
+                    text
+                    @click="onUpdateNode();"
+                  >Update Node</v-btn>
+                </v-list-item>
+                <dialog-topic-component :click-function="onAddNode"></dialog-topic-component>
+              </template>
+            </v-card-actions>
+          </v-card>
         </div>
       </li>
     </ul>
@@ -196,6 +212,8 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 // https://github.com/visjs/vis-network
 import { Network } from "vis-network/peer/esm/vis-network";
 import { DataSet } from "vis-data/peer/esm/vis-data"
+
+import KGraphDialogAddTopic from "@/components/KGraph-Dialog-AddTopic.vue";
 
 // https://vuetifyjs.com
 
@@ -289,7 +307,10 @@ export default {
   computed: {
   },
   // register the component
-  components: { Treeselect },
+  components: {
+    Treeselect,
+    'dialog-topic-component': KGraphDialogAddTopic
+    },
   methods: {
     onTopicAdded: function (data) {
       this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
@@ -305,13 +326,21 @@ export default {
     },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
-      console.log("onSelectNode event: ", event, " node: ", node)
+      console.log("onSelectNode event: ", event, " node: ", node);
 
       this.selectedNodeID = node.id;
       const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
       console.log("onSelectNode - topic:", topic)
       this.addTopicName = topic.label;
       this.addTopicContent = topic.title;
+    },
+    onClick(event){
+      console.log("onClick event: ", event);
+      if (event.nodes.length == 0) {
+        this.selectedNodeID = '';
+        this.addTopicName = '';
+        this.addTopicContent = '';
+      }
     },
     async onUpdateNode(){ 
       console.log("onUpdateNode - nodeID:", this.selectedNodeID);
@@ -396,11 +425,14 @@ export default {
       // redraw
       this.buildVisGraph();
     },
-    async onAddNode(child){ 
-      if (this.addTopicName == '') {
+    async onAddNode(child, addTopicName, addTopicContent){ 
+      if (addTopicName == '') {
         alert("Fill in all the required fields!");
         return;
       }
+
+      this.addTopicName = addTopicName;
+      this.addTopicContent = addTopicContent;
 
       var result = null;
       try {
@@ -483,6 +515,7 @@ export default {
       // this.network.stopSimulation();
       // https://github.com/visjs/vis-network/blob/master/examples/network/events/interactionEvents.html
       this.network.on('selectNode', event => this.onSelectNode(event));
+      this.network.on('click', event => this.onClick(event));
       this.network.on("doubleClick", function(data) {
         console.log("doubleClick: ", data)
       });

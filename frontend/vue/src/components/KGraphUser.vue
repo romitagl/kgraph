@@ -305,13 +305,21 @@ export default {
     },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
-      console.log("onSelectNode event: ", event, " node: ", node)
+      console.log("onSelectNode event: ", event, " node: ", node);
 
       this.selectedNodeID = node.id;
       const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
       console.log("onSelectNode - topic:", topic)
       this.addTopicName = topic.label;
       this.addTopicContent = topic.title;
+    },
+    onClick(event){
+      console.log("onClick event: ", event);
+      if (event.nodes.length == 0) {
+        this.selectedNodeID = '';
+        this.addTopicName = '';
+        this.addTopicContent = '';
+      }
     },
     async onUpdateNode(){ 
       console.log("onUpdateNode - nodeID:", this.selectedNodeID);
@@ -483,6 +491,7 @@ export default {
       // this.network.stopSimulation();
       // https://github.com/visjs/vis-network/blob/master/examples/network/events/interactionEvents.html
       this.network.on('selectNode', event => this.onSelectNode(event));
+      this.network.on('click', event => this.onClick(event));
       this.network.on("doubleClick", function(data) {
         console.log("doubleClick: ", data)
       });

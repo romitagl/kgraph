@@ -1,1 +1,1 @@
-{"version":2,"tables":[{"table":{"schema":"kgraph","name":"topics"}},{"table":{"schema":"kgraph","name":"users"}}]}
+{"version":2,"tables":[{"table":{"schema":"kgraph","name":"topics"},"object_relationships":[{"name":"user","using":{"foreign_key_constraint_on":"users_username"}}]},{"table":{"schema":"kgraph","name":"users"},"array_relationships":[{"name":"topics","using":{"foreign_key_constraint_on":{"column":"users_username","table":{"schema":"kgraph","name":"topics"}}}}]}]}

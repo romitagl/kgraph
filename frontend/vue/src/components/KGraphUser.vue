@@ -217,20 +217,32 @@ import KGraphDialogAddTopic from "@/components/KGraph-Dialog-AddTopic.vue";
 
 // https://vuetifyjs.com
 
+function buildTopicLabel(topicName, topicContent){
+  const label = topicContent ? topicName  + ":\n" + topicContent : topicName;
+  return label;
+}
+
+function buildTopicElement(topicId, topicName, topicContent, parentID){
+  const element = {
+    id: topicId,
+    // contatenate topic name and content to display in the node
+    label: buildTopicLabel(topicName, topicContent),
+    name: topicName,
+    title: topicContent,
+    parent_id : parentID,
+    // https://visjs.github.io/vis-network/docs/network/nodes.html
+    shape: "box",
+  }
+  return element
+}
+
 function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
   // console.log(kgraph_topics)
   if(Array.isArray(kgraph_topics)) {
     for (var counter = 0; counter < kgraph_topics.length; counter++) {
       // console.log(counter)
       const topic = kgraph_topics[counter];
-      const element = {
-        id: topic.id,
-        label: topic.name,
-        title: topic.content,
-        parent_id : topic.parent_id,
-        // https://visjs.github.io/vis-network/docs/network/nodes.html
-        shape: "ellipse",
-      }
+      const element = buildTopicElement(topic.id, topic.name, topic.content, topic.parent_id);
       if (topic.parent_id != null) {
         // console.log("topic id:" + topic.id + " parent: " + topic.parent_id)
         const relation = {
@@ -331,7 +343,7 @@ export default {
       this.selectedNodeID = node.id;
       const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
       console.log("onSelectNode - topic:", topic)
-      this.addTopicName = topic.label;
+      this.addTopicName = topic.name;
       this.addTopicContent = topic.title;
     },
     onClick(event){
@@ -369,7 +381,8 @@ export default {
       // update element for the list
       for (let position = 0; position < this.topics.length; position++) {
         if ( this.topics[position].id == this.selectedNodeID) {
-          this.topics[position].label = this.addTopicName;
+          this.topics[position].name = this.addTopicName;
+          this.topics[position].label = buildTopicLabel(this.addTopicName, this.addTopicContent);
           this.topics[position].title = this.addTopicContent;
         }
       }
@@ -458,12 +471,7 @@ export default {
       this.dialogAdd = false;
 
       // add new topic to the list
-      const element = {
-        id: this.topicAddedResult,
-        label: this.addTopicName,
-        title: this.addTopicContent,
-        parent_id: (child ? this.selectedNodeID : null)
-      }
+      const element = buildTopicElement(this.topicAddedResult, this.addTopicName, this.addTopicContent, (child ? this.selectedNodeID : null));
       this.topics.push(element);
       // add new relation for child topics
       if (child) {
@@ -517,10 +525,10 @@ export default {
       this.network.on('selectNode', event => this.onSelectNode(event));
       this.network.on('click', event => this.onClick(event));
       this.network.on("doubleClick", function(data) {
-        console.log("doubleClick: ", data)
+        console.log("doubleClick: ", data);
       });
       // Fired when the user click on the canvas with the right mouse button. The right mouse button does not select by default. You can use the method getNodeAt to select the node if you want.
-      this.network.on("oncontext", this.onNetworkContext)
+      this.network.on("oncontext", this.onNetworkContext);
     },
   },
 }

@@ -1,0 +1,18 @@
+name: CI Debug
+
+on:
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug CI
+        run: |
+          printf "github.event.comment.body: %s\n" ${{ github.event.comment.body }}
+          printf "github.event_name: %s\n" ${{ github.event_name }}
+          printf "github.event.workflow_run.conclusion: %s\n" ${{ github.event.workflow_run.conclusion == 'success' }}
+          printf "github.head_ref: %s\n" ${{ github.head_ref }}
+          printf "github.event.pull_request.head.ref: %s\n" ${{ github.event.pull_request.head.ref }}
+          printf "actions/checkout@v2 ref: %s\n" ${{format('refs/pull/{0}/head', github.event.issue.number )}}

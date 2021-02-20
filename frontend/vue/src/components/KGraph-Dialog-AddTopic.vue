@@ -23,7 +23,7 @@ export default {
     <v-btn
       color="primary"
       text
-      @click.stop="dialog = true"
+      @click.stop="dialog = true; addTopicName = ''; addTopicContent = ''"
     >
       Add Child
     </v-btn>

@@ -10,6 +10,7 @@ export default {
   },
   // https://vuejs.org/v2/guide/components.html#Passing-Data-to-Child-Components-with-Props
   props: {
+    addChild: Boolean,
     clickFunction : {
       type: Function,
       required: true
@@ -20,12 +21,22 @@ export default {
 
 <template>
   <v-row justify="center">
+    
     <v-btn
+      v-if="addChild == true"
       color="primary"
       text
       @click.stop="dialog = true; addTopicName = ''; addTopicContent = ''"
     >
       Add Child
+    </v-btn>
+    <v-btn
+      v-if="addChild == false"
+      color="primary"
+      text
+      @click.stop="dialog = true; addTopicName = ''; addTopicContent = ''"
+    >
+      Add Topic
     </v-btn>
 
     <v-dialog
@@ -72,7 +83,7 @@ export default {
           <v-btn
             color="primary"
             text
-            @click="clickFunction(true, addTopicName, addTopicContent); dialog = false"
+            @click="clickFunction(addChild, addTopicName, addTopicContent); dialog = false"
           >
             Add
           </v-btn>

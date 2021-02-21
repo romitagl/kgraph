@@ -1,5 +1,6 @@
+# https://hasura.io/docs/1.0/graphql/core/queries/query-filters.html#text-search-or-pattern-matching-operators-like-similar-etc
 query searchTopicsForUser ($topicsName: String! $username: String!) {
-  kgraph_topics(where: {users_username: {_eq: $username} , name: {_ilike: $topicsName}}) {
+  kgraph_topics(where: {users_username: {_eq: $username}, _or: [{name: {_ilike:  $topicsName}}, { content: {_ilike:  $topicsName}}]}) {
     id
     name
     content

@@ -62,11 +62,15 @@
       <td max-width="500px" width="500px">
         <div id="vuetreeselect">
           Topics list:
+          <!-- https://vue-treeselect.js.org/#events -->
           <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
           <treeselect
             :multiple="false"
             :open-on-click="true"
             :options="topics"
+            @select="onTreeSelectNode"
+            @deselect="onTreeDeselect"
+            v-model="selectedNodeID"
           />
         </div>
       </td>
@@ -87,58 +91,12 @@
           </template>
 
           <v-list>
-              <!-- <v-btn text @click="onAddNode">Add Node</v-btn> --> 
-              <v-dialog
-                v-model="dialogAdd"
-                max-width="500px"
-              >
-              <template v-slot:activator="{ on }">
-                <v-list-item v-show="btnAddTopic">
-                  <v-btn color="primary" text v-on:click="on.click" v-show="btnAddTopic" v-if="selectedNodeID == ''">Add Topic</v-btn>
-                  <v-btn color="primary" text v-on:click="on.click" v-show="btnAddTopic" v-if="selectedNodeID != ''" @click="addTopicName=''; addTopicContent=''">Add Child Topic</v-btn>
-                </v-list-item>
-              </template>
-                <v-card>
-                  <v-card-title>
-                    Topic Details
-                  </v-card-title>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="6">
-                          <v-text-field
-                            label="Topic Name"
-                            required
-                            v-model="addTopicName"
-                          ></v-text-field>
-                        </v-col>
-                        </v-row>
-                        <v-row>
-                        <v-col cols="12">
-                          <v-text-field
-                            label="Content"
-                            required
-                            v-model="addTopicContent"
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  <v-card-actions>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="dialogAdd = false; btnAddTopic=false"
-                    >Cancel</v-btn>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="onAddNode(selectedNodeID != '', addTopicName, addTopicContent); btnAddTopic=false"
-                    >Add</v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
+            <v-list-item>
+              <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode" v-show="btnAddTopic" @click="btnAddTopic = false"></dialog-topic-component>
+            </v-list-item>
             <template v-if="selectedNodeID != ''">
               <v-list-item v-show="btnAddTopic">
-                <v-btn 
+                <v-btn
                   color="primary"
                   text
                   v-show="btnAddTopic"
@@ -151,7 +109,7 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <v-card>
+          <v-card width="510px" height="450px">
             <v-card-title>
               Topic Details
             </v-card-title>
@@ -167,11 +125,11 @@
                   </v-row>
                   <v-row>
                   <v-col cols="12">
-                    <v-text-field
+                    <v-textarea
                       label="Content"
                       required
                       v-model="addTopicContent"
-                    ></v-text-field>
+                    ></v-textarea>
                   </v-col>
                 </v-row>
               </v-container>
@@ -194,7 +152,7 @@
                     @click="onUpdateNode();"
                   >Update Node</v-btn>
                 </v-list-item>
-                <dialog-topic-component :click-function="onAddNode"></dialog-topic-component>
+                <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode"></dialog-topic-component>
               </template>
             </v-card-actions>
           </v-card>
@@ -299,7 +257,6 @@ export default {
       },
       // right-click graph topics management
       selectedNodeID: '',
-      dialogAdd: false,
       btnAddTopic: true,
       addTopicName: '',
       addTopicContent: '',
@@ -335,6 +292,20 @@ export default {
       buildTopicsTree(topicsTree, topicsRelations, data.kgraph_topics)
       this.topics = topicsTree;
       this.topicsRelations = topicsRelations;
+    },
+    onTreeSelectNode(node, instanceId) {
+      console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
+
+      this.selectedNodeID = node.id;
+      this.addTopicName = node.name;
+      this.addTopicContent = node.title;
+      this.network.selectNodes([node.id]);
+    },
+    onTreeDeselect(){
+      console.log("onTreeDeselect")
+      this.selectedNodeID = '';
+      this.addTopicName = '';
+      this.addTopicContent = '';
     },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
@@ -390,7 +361,7 @@ export default {
       // redraw
       this.buildVisGraph();
     },
-    async onDeleteNode(){ 
+    async onDeleteNode(){
       console.log("onDeleteNode - nodeID:", this.selectedNodeID)
       if (this.selectedNodeID == '') {
         alert("No selected node found!");
@@ -412,21 +383,17 @@ export default {
       }
 
       // remove element from the topic list
-      let parent_id = null;
       for (let position = 0; position < this.topics.length; position++) {
         if ( this.topics[position].id == this.selectedNodeID) {
-            parent_id = this.topics[position].parent_id;
             this.topics.splice(position, 1);
             break;
         }
       }
-      // remove relation for child topic
-      if (parent_id != null) {
-        for (let position = 0; position < this.topicsRelations.length; position++) {
-          if ( this.topicsRelations[position].from == this.selectedNodeID && this.topicsRelations[position].to == parent_id) {
-              this.topicsRelations.splice(position, 1); 
-              break;
-          }
+      // remove relations involving the deleted topic
+      for (let position = 0; position < this.topicsRelations.length; position++) {
+        if ( this.topicsRelations[position].from == this.selectedNodeID || this.topicsRelations[position].to == this.selectedNodeID ) {
+            this.topicsRelations.splice(position, 1); 
+            break;
         }
       }
 
@@ -439,6 +406,7 @@ export default {
       this.buildVisGraph();
     },
     async onAddNode(child, addTopicName, addTopicContent){ 
+      console.log("onAddNode: child[%s], addTopicName[%s], addTopicContent[%s], selectedNodeID[%s]", child, addTopicName, addTopicContent, this.selectedNodeID);
       if (addTopicName == '') {
         alert("Fill in all the required fields!");
         return;
@@ -468,7 +436,7 @@ export default {
       // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
       this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
       // close the add Dialog
-      this.dialogAdd = false;
+      this.btnAddTopic = false;
 
       // add new topic to the list
       const element = buildTopicElement(this.topicAddedResult, this.addTopicName, this.addTopicContent, (child ? this.selectedNodeID : null));
@@ -600,7 +568,7 @@ tr, li {
 
 #vis-topics-graph {
   width: 1024px;
-  height: 400px;
+  height: 800px;
   border: 1px solid lightgray;
 }
 

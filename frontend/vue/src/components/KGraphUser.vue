@@ -62,11 +62,15 @@
       <td max-width="500px" width="500px">
         <div id="vuetreeselect">
           Topics list:
+          <!-- https://vue-treeselect.js.org/#events -->
           <!-- https://github.com/rangowuchen/ElementUIExample/blob/696672475cf35e2eee29cbdca518226c37e371b8/src/pages/vue-treeselect/components/moreFunction.vue -->
           <treeselect
             :multiple="false"
             :open-on-click="true"
             :options="topics"
+            @select="onTreeSelectNode"
+            @deselect="onTreeDeselect"
+            v-model="selectedNodeID"
           />
         </div>
       </td>
@@ -289,6 +293,20 @@ export default {
       this.topics = topicsTree;
       this.topicsRelations = topicsRelations;
     },
+    onTreeSelectNode(node, instanceId) {
+      console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
+
+      this.selectedNodeID = node.id;
+      this.addTopicName = node.name;
+      this.addTopicContent = node.title;
+      this.network.selectNodes([node.id]);
+    },
+    onTreeDeselect(){
+      console.log("onTreeDeselect")
+      this.selectedNodeID = '';
+      this.addTopicName = '';
+      this.addTopicContent = '';
+    },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
       console.log("onSelectNode event: ", event, " node: ", node);
@@ -343,7 +361,7 @@ export default {
       // redraw
       this.buildVisGraph();
     },
-    async onDeleteNode(){ 
+    async onDeleteNode(){
       console.log("onDeleteNode - nodeID:", this.selectedNodeID)
       if (this.selectedNodeID == '') {
         alert("No selected node found!");

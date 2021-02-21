@@ -92,7 +92,7 @@
             </v-list-item>
             <template v-if="selectedNodeID != ''">
               <v-list-item v-show="btnAddTopic">
-                <v-btn 
+                <v-btn
                   color="primary"
                   text
                   v-show="btnAddTopic"
@@ -105,7 +105,7 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <v-card>
+          <v-card width="510px" height="450px">
             <v-card-title>
               Topic Details
             </v-card-title>
@@ -121,11 +121,11 @@
                   </v-row>
                   <v-row>
                   <v-col cols="12">
-                    <v-text-field
+                    <v-textarea
                       label="Content"
                       required
                       v-model="addTopicContent"
-                    ></v-text-field>
+                    ></v-textarea>
                   </v-col>
                 </v-row>
               </v-container>
@@ -148,7 +148,7 @@
                     @click="onUpdateNode();"
                   >Update Node</v-btn>
                 </v-list-item>
-                <dialog-topic-component :click-function="onAddNode"></dialog-topic-component>
+                <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode"></dialog-topic-component>
               </template>
             </v-card-actions>
           </v-card>
@@ -550,7 +550,7 @@ tr, li {
 
 #vis-topics-graph {
   width: 1024px;
-  height: 400px;
+  height: 800px;
   border: 1px solid lightgray;
 }
 

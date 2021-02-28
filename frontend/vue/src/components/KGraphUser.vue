@@ -90,7 +90,7 @@
             <div id="vis-topics-graph" v-on:click.right="on.click"></div>
           </template>
 
-          <v-list>
+          <v-list v-show="btnAddTopic">
             <v-list-item>
               <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode" v-show="btnAddTopic" @click="btnAddTopic = false"></dialog-topic-component>
             </v-list-item>
@@ -235,6 +235,11 @@ export default {
       displayOptions: {
         configure: {
           enabled: false // https://visjs.github.io/vis-network/docs/network/configure.html
+        },
+        layout: {
+          hierarchical: {
+            direction: 'UD',
+          },
         },
         interaction: {
           selectable: true,

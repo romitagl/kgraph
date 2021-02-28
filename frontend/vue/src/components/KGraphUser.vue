@@ -52,7 +52,7 @@
               <div v-else-if="data != null" class="result apollo">
                 {{ prevTopicName = topicName }}
                 <!-- {{ data }} -->
-                {{ getTopics(data) }} {{ buildVisGraph() }}
+                {{ getTopics(data, topicName == '') }} {{ buildVisGraph() }}
               </div>
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>
@@ -67,7 +67,7 @@
           <treeselect
             :multiple="false"
             :open-on-click="true"
-            :options="topics"
+            :options="topicsList"
             @select="onTreeSelectNode"
             @deselect="onTreeDeselect"
             v-model="selectedNodeID"
@@ -90,7 +90,7 @@
             <div id="vis-topics-graph" v-on:click.right="on.click"></div>
           </template>
 
-          <v-list>
+          <v-list v-show="btnAddTopic">
             <v-list-item>
               <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode" v-show="btnAddTopic" @click="btnAddTopic = false"></dialog-topic-component>
             </v-list-item>
@@ -109,30 +109,42 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <v-card width="510px" height="450px">
+          <v-card width="510px" height="550px">
             <v-card-title>
               Topic Details
             </v-card-title>
-              <v-container>
-                <v-row>
-                  <v-col cols="6">
+            <v-container>
+              <v-row>
+                  <v-col cols="8">
                     <v-text-field
                       label="Topic Name"
                       required
                       v-model="addTopicName"
                     ></v-text-field>
                   </v-col>
-                  </v-row>
-                  <v-row>
-                  <v-col cols="12">
-                    <v-textarea
-                      label="Content"
-                      required
-                      v-model="addTopicContent"
-                    ></v-textarea>
-                  </v-col>
-                </v-row>
-              </v-container>
+              </v-row>
+              <v-row>
+                <v-col align="left">
+                    Parent Topic:
+                <treeselect
+                    placeholder="None"
+                    v-model="addTopicParentID"
+                    :multiple="false"
+                    :open-on-click="true"
+                    :options="topicsList"
+                />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-textarea
+                    label="Content"
+                    required
+                    v-model="addTopicContent"
+                  ></v-textarea>
+                </v-col>
+              </v-row>
+            </v-container>
             <v-card-actions>
               <template v-if="selectedNodeID == ''">
                 <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
@@ -214,6 +226,105 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
   }
 }
 
+function updateTopicsTree(topicsTree, topicsRelations, id, name, content, parent_id){
+  // update element for the list
+  for (let position = 0; position < topicsTree.length; position++) {
+    if ( topicsTree[position].id == id) {
+      topicsTree[position].name = name;
+      topicsTree[position].label = buildTopicLabel(name, content);
+      topicsTree[position].title = content;
+      topicsTree[position].parent_id = parent_id;
+      break;
+    }
+  }
+  // update relations involving the updated topic
+  var relationFound = false
+  for (let position = 0; position < topicsRelations.length; position++) {
+    if ( topicsRelations[position].from == id) {
+      topicsRelations[position].to = parent_id;
+      relationFound = true;
+      break;
+    }
+  }
+  // add new relation
+  if(parent_id != null && !relationFound){
+      const relation = {
+      from: id,
+      to: parent_id
+    }
+    topicsRelations.push(relation);
+  }
+}
+
+function addTreeTopic(topicsTree, topicsRelations, id, name, content, parent_id){
+  const element = buildTopicElement(id, name, content, parent_id);
+  topicsTree.push(element);
+  // add new relation for child topics
+  if (parent_id != null) {
+    const relation = {
+      from: id,
+      to: parent_id
+    }
+    topicsRelations.push(relation);
+  }
+}
+
+function deleteTreeTopic(topicsTree, topicsRelations, id){
+  for (let position = 0; position < topicsTree.length; position++) {
+    if ( topicsTree[position].id == id) {
+        topicsTree.splice(position, 1);
+        break;
+    }
+  }
+  // remove relations involving the deleted topic
+  for (let position = 0; position < topicsRelations.length; position++) {
+    if ( topicsRelations[position].from == id || topicsRelations[position].to == id ) {
+        topicsRelations.splice(position, 1); 
+        break;
+    }
+  }
+}
+
+function buildTopicsList(topicsList, kgraph_topics) {
+  if(Array.isArray(kgraph_topics)) {
+    for (var counter = 0; counter < kgraph_topics.length; counter++) {
+      // console.log(counter)
+      const topic = kgraph_topics[counter];
+      const element = {
+        id: topic.id,
+        label: topic.name
+      }
+      topicsList.push(element);
+    }
+  }
+}
+
+function updateTopicsList(topicsList, id, name) {
+  for (let position = 0; position < topicsList.length; position++) {
+    if ( topicsList[position].id == id) {
+      topicsList[position].label = name;
+      break;
+    }
+  }
+}
+
+function addListTopic(topicsList, id, name) {
+  const element = {
+    id: id,
+    label: name
+  }
+  topicsList.push(element);
+}
+
+function deleteListTopic(topicsList, id){
+  for (let position = 0; position < topicsList.length; position++) {
+    if ( topicsList[position].id == id) {
+        topicsList.splice(position, 1);
+        break;
+    }
+  }
+}
+
 export default {
   data () {
     return {
@@ -224,9 +335,10 @@ export default {
       prevTopicName: ' ', // developer note -> initialized as space or not empty string
       topicAddedResult: '',
       // vue-treeselect
+      topicsList: [],
+      // vis-network
       topics: [],
       topicsRelations: [],
-      // vis-network
       network: null,
       // nodes: new DataSet([{ id: "1", label: "Example topic 1" }, { id: "2", label: "Example topic 2" }]),
       nodes: new DataSet([]),
@@ -235,6 +347,13 @@ export default {
       displayOptions: {
         configure: {
           enabled: false // https://visjs.github.io/vis-network/docs/network/configure.html
+        },
+        layout: {
+          hierarchical: {
+            enabled: true,
+            direction: 'DU',
+            sortMethod: "directed"
+          },
         },
         interaction: {
           selectable: true,
@@ -256,10 +375,11 @@ export default {
         }
       },
       // right-click graph topics management
-      selectedNodeID: '',
       btnAddTopic: true,
+      selectedNodeID: '',
       addTopicName: '',
       addTopicContent: '',
+      addTopicParentID: '',
     }
   },
   created() {
@@ -281,48 +401,60 @@ export default {
     'dialog-topic-component': KGraphDialogAddTopic
     },
   methods: {
+    resetTopicFields(){
+      this.selectedNodeID = '';
+      this.addTopicName = '';
+      this.addTopicContent = '';
+      this.addTopicParentID = '';
+    },
+    setTopicFields(addTopicName, addTopicContent, selectedNodeID, addTopicParentID){
+      this.addTopicName = addTopicName;
+      this.addTopicContent = addTopicContent;
+      this.selectedNodeID = selectedNodeID;
+      this.addTopicParentID = addTopicParentID;
+    },
     onTopicAdded: function (data) {
       this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
     },
-    getTopics(data) {
+    getTopics(data, rebuildTopicsList) {
       console.log("getTopics()");
-      console.log(data);
+      // console.log(data);
+      // build the graph structure
       let topicsTree = [];
       let topicsRelations = [];
       buildTopicsTree(topicsTree, topicsRelations, data.kgraph_topics)
+      // set the new structure
       this.topics = topicsTree;
       this.topicsRelations = topicsRelations;
+      // build the List for the treeselect combo
+      if(rebuildTopicsList) {
+        let topicsList = [];
+        buildTopicsList(topicsList, data.kgraph_topics);
+        this.topicsList = topicsList;
+      }
     },
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
 
-      this.selectedNodeID = node.id;
-      this.addTopicName = node.name;
-      this.addTopicContent = node.title;
+      this.setTopicFields(node.name, node.title, node.id, node.parent_id);
       this.network.selectNodes([node.id]);
     },
     onTreeDeselect(){
       console.log("onTreeDeselect")
-      this.selectedNodeID = '';
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields();
     },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
       console.log("onSelectNode event: ", event, " node: ", node);
 
-      this.selectedNodeID = node.id;
-      const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
+      const topic = this.topics.find(obj => obj.id == node.id);
       console.log("onSelectNode - topic:", topic)
-      this.addTopicName = topic.name;
-      this.addTopicContent = topic.title;
+      this.setTopicFields(topic.name, topic.title, topic.id, topic.parent_id);
     },
     onClick(event){
       console.log("onClick event: ", event);
       if (event.nodes.length == 0) {
-        this.selectedNodeID = '';
-        this.addTopicName = '';
-        this.addTopicContent = '';
+        this.resetTopicFields();
       }
     },
     async onUpdateNode(){ 
@@ -339,7 +471,8 @@ export default {
             topicName: this.addTopicName,
             content: this.addTopicContent,
             username: this.selectedUser,
-            id: this.selectedNodeID
+            id: this.selectedNodeID,
+            parent_id: this.addTopicParentID,
           }
         })
       }
@@ -350,13 +483,8 @@ export default {
       }
 
       // update element for the list
-      for (let position = 0; position < this.topics.length; position++) {
-        if ( this.topics[position].id == this.selectedNodeID) {
-          this.topics[position].name = this.addTopicName;
-          this.topics[position].label = buildTopicLabel(this.addTopicName, this.addTopicContent);
-          this.topics[position].title = this.addTopicContent;
-        }
-      }
+      updateTopicsTree(this.topics, this.topicsRelations, this.selectedNodeID, this.addTopicName, this.addTopicContent, this.addTopicParentID);
+      updateTopicsList(this.topicsList, this.selectedNodeID, this.addTopicName);
 
       // redraw
       this.buildVisGraph();
@@ -383,24 +511,11 @@ export default {
       }
 
       // remove element from the topic list
-      for (let position = 0; position < this.topics.length; position++) {
-        if ( this.topics[position].id == this.selectedNodeID) {
-            this.topics.splice(position, 1);
-            break;
-        }
-      }
-      // remove relations involving the deleted topic
-      for (let position = 0; position < this.topicsRelations.length; position++) {
-        if ( this.topicsRelations[position].from == this.selectedNodeID || this.topicsRelations[position].to == this.selectedNodeID ) {
-            this.topicsRelations.splice(position, 1); 
-            break;
-        }
-      }
+      deleteTreeTopic(this.topics, this.topicsRelations, this.selectedNodeID);
+      deleteListTopic(this.topicsList, this.selectedNodeID);
 
       // reset fields
-      this.selectedNodeID = '';
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields()
 
       // redraw
       this.buildVisGraph();
@@ -414,6 +529,7 @@ export default {
 
       this.addTopicName = addTopicName;
       this.addTopicContent = addTopicContent;
+      this.addTopicParentID = (child ? this.selectedNodeID : null)
 
       var result = null;
       try {
@@ -439,20 +555,11 @@ export default {
       this.btnAddTopic = false;
 
       // add new topic to the list
-      const element = buildTopicElement(this.topicAddedResult, this.addTopicName, this.addTopicContent, (child ? this.selectedNodeID : null));
-      this.topics.push(element);
-      // add new relation for child topics
-      if (child) {
-        const relation = {
-          from: element.id,
-          to: element.parent_id
-        }
-        this.topicsRelations.push(relation);
-      }
+      addTreeTopic(this.topics, this.topicsRelations, this.topicAddedResult, this.addTopicName, this.addTopicContent, (child ? this.selectedNodeID : null));
+      addListTopic(this.topicsList, this.topicAddedResult, this.addTopicName);
 
       // reset fields
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields();
 
       // redraw
       this.buildVisGraph();

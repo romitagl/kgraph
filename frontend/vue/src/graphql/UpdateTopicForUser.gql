@@ -1,5 +1,5 @@
-mutation updateTopicForUser($topicName: String!, $username: String!, $id: uuid, $content: String) {
-  update_kgraph_topics(where: {users_username: {_eq: $username}, id: {_eq: $id}}, _set: {content: $content, name: $topicName}) {
+mutation updateTopicForUser($username: String!, $id: uuid, $content: String, $topicName: String!, $parent_id: uuid) {
+  update_kgraph_topics(where: {users_username: {_eq: $username}, id: {_eq: $id}}, _set: {content: $content, name: $topicName, parent_id: $parent_id}) {
     returning {
       updated_at
     }

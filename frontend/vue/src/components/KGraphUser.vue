@@ -109,30 +109,42 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <v-card width="510px" height="450px">
+          <v-card width="510px" height="550px">
             <v-card-title>
               Topic Details
             </v-card-title>
-              <v-container>
-                <v-row>
-                  <v-col cols="6">
+            <v-container>
+              <v-row>
+                  <v-col cols="8">
                     <v-text-field
                       label="Topic Name"
                       required
                       v-model="addTopicName"
                     ></v-text-field>
                   </v-col>
-                  </v-row>
-                  <v-row>
-                  <v-col cols="12">
-                    <v-textarea
-                      label="Content"
-                      required
-                      v-model="addTopicContent"
-                    ></v-textarea>
-                  </v-col>
-                </v-row>
-              </v-container>
+              </v-row>
+              <v-row>
+                <v-col align="left">
+                    Parent Topic:
+                <treeselect
+                    placeholder="None"
+                    v-model="addTopicParentID"
+                    :multiple="false"
+                    :open-on-click="true"
+                    :options="topics"
+                />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-textarea
+                    label="Content"
+                    required
+                    v-model="addTopicContent"
+                  ></v-textarea>
+                </v-col>
+              </v-row>
+            </v-container>
             <v-card-actions>
               <template v-if="selectedNodeID == ''">
                 <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
@@ -238,7 +250,9 @@ export default {
         },
         layout: {
           hierarchical: {
-            direction: 'UD',
+            enabled: true,
+            direction: 'DU',
+            sortMethod: "directed"
           },
         },
         interaction: {
@@ -261,10 +275,11 @@ export default {
         }
       },
       // right-click graph topics management
-      selectedNodeID: '',
       btnAddTopic: true,
+      selectedNodeID: '',
       addTopicName: '',
       addTopicContent: '',
+      addTopicParentID: '',
     }
   },
   created() {
@@ -286,6 +301,18 @@ export default {
     'dialog-topic-component': KGraphDialogAddTopic
     },
   methods: {
+    resetTopicFields(){
+      this.selectedNodeID = '';
+      this.addTopicName = '';
+      this.addTopicContent = '';
+      this.addTopicParentID = '';
+    },
+    setTopicFields(addTopicName, addTopicContent, selectedNodeID, addTopicParentID){
+      this.addTopicName = addTopicName;
+      this.addTopicContent = addTopicContent;
+      this.selectedNodeID = selectedNodeID;
+      this.addTopicParentID = addTopicParentID;
+    },
     onTopicAdded: function (data) {
       this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
     },
@@ -301,33 +328,25 @@ export default {
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
 
-      this.selectedNodeID = node.id;
-      this.addTopicName = node.name;
-      this.addTopicContent = node.title;
+      this.setTopicFields(node.name, node.title, node.id, node.parent_id);
       this.network.selectNodes([node.id]);
     },
     onTreeDeselect(){
       console.log("onTreeDeselect")
-      this.selectedNodeID = '';
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields();
     },
     onSelectNode(event) {
       const node = this.nodes.get(event.nodes[0]);
       console.log("onSelectNode event: ", event, " node: ", node);
 
-      this.selectedNodeID = node.id;
-      const topic = this.topics.find(obj => obj.id == this.selectedNodeID);
+      const topic = this.topics.find(obj => obj.id == node.id);
       console.log("onSelectNode - topic:", topic)
-      this.addTopicName = topic.name;
-      this.addTopicContent = topic.title;
+      this.setTopicFields(topic.name, topic.title, topic.id, topic.parent_id);
     },
     onClick(event){
       console.log("onClick event: ", event);
       if (event.nodes.length == 0) {
-        this.selectedNodeID = '';
-        this.addTopicName = '';
-        this.addTopicContent = '';
+        this.resetTopicFields();
       }
     },
     async onUpdateNode(){ 
@@ -344,7 +363,8 @@ export default {
             topicName: this.addTopicName,
             content: this.addTopicContent,
             username: this.selectedUser,
-            id: this.selectedNodeID
+            id: this.selectedNodeID,
+            parent_id: this.addTopicParentID,
           }
         })
       }
@@ -360,7 +380,25 @@ export default {
           this.topics[position].name = this.addTopicName;
           this.topics[position].label = buildTopicLabel(this.addTopicName, this.addTopicContent);
           this.topics[position].title = this.addTopicContent;
+          this.topics[position].parent_id = this.addTopicParentID;
         }
+      }
+      // update relations involving the updated topic
+      var relationFound = false
+      for (let position = 0; position < this.topicsRelations.length; position++) {
+        if ( this.topicsRelations[position].from == this.selectedNodeID) {
+          this.topicsRelations[position].to = this.addTopicParentID;
+          relationFound = true;
+          break;
+        }
+      }
+      // add new relation
+      if(this.addTopicParentID != null && !relationFound){
+          const relation = {
+          from: this.selectedNodeID,
+          to: this.addTopicParentID
+        }
+        this.topicsRelations.push(relation);
       }
 
       // redraw
@@ -403,9 +441,7 @@ export default {
       }
 
       // reset fields
-      this.selectedNodeID = '';
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields()
 
       // redraw
       this.buildVisGraph();
@@ -419,6 +455,7 @@ export default {
 
       this.addTopicName = addTopicName;
       this.addTopicContent = addTopicContent;
+      this.addTopicParentID = (child ? this.selectedNodeID : null)
 
       var result = null;
       try {
@@ -456,8 +493,7 @@ export default {
       }
 
       // reset fields
-      this.addTopicName = '';
-      this.addTopicContent = '';
+      this.resetTopicFields();
 
       // redraw
       this.buildVisGraph();

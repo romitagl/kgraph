@@ -52,7 +52,7 @@
               <div v-else-if="data != null" class="result apollo">
                 {{ prevTopicName = topicName }}
                 <!-- {{ data }} -->
-                {{ getTopics(data) }} {{ buildVisGraph() }}
+                {{ getTopics(data, topicName == '') }} {{ buildVisGraph() }}
               </div>
               <!-- No result -->
               <div v-else class="no-result apollo">No result :(</div>
@@ -416,7 +416,7 @@ export default {
     onTopicAdded: function (data) {
       this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
     },
-    getTopics(data) {
+    getTopics(data, rebuildTopicsList) {
       console.log("getTopics()");
       // console.log(data);
       // build the graph structure
@@ -427,9 +427,11 @@ export default {
       this.topics = topicsTree;
       this.topicsRelations = topicsRelations;
       // build the List for the treeselect combo
-      let topicsList = [];
-      buildTopicsList(topicsList, data.kgraph_topics);
-      this.topicsList = topicsList;
+      if(rebuildTopicsList) {
+        let topicsList = [];
+        buildTopicsList(topicsList, data.kgraph_topics);
+        this.topicsList = topicsList;
+      }
     },
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);

@@ -109,13 +109,13 @@
 
         <!-- <pre id="eventSpanContent"></pre> -->
         <div>
-          <v-card width="510px" height="550px">
+          <v-card width="510px" min-height="550px">
             <v-card-title>
               Topic Details
             </v-card-title>
             <v-container>
               <v-row>
-                  <v-col cols="8">
+                  <v-col cols="12">
                     <v-text-field
                       label="Topic Name"
                       required
@@ -124,7 +124,7 @@
                   </v-col>
               </v-row>
               <v-row>
-                <v-col align="left">
+                <v-col align="left" cols="12">
                     Parent Topic:
                 <treeselect
                     placeholder="None"
@@ -679,4 +679,4 @@ tr, li {
   border: 1px solid lightgray;
 }
 
-</style>
+</style>-

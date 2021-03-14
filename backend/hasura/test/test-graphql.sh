@@ -10,8 +10,17 @@ function test_add_topic () {
   $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { delete_kgraph_users(where: {username: {_eq: \\\"$kg_test_username\\\"}}) { affected_rows }}\" }" "$HASURA_GRAPHQL_ENDPOINT"
 
   # 1. create an entry in the users table
-  INSERT_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_users(objects: {username: \\\"$kg_test_username\\\", display_name: \\\"$kg_test_username\\\"}) { returning { created_at } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
-  printf "created user: %s at: %s\n" "$kg_test_username" "$INSERT_RET_VAL"
+  # INSERT_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_users(objects: {username: \\\"$kg_test_username\\\", display_name: \\\"$kg_test_username\\\"}) { returning { created_at } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
+  # printf "created user: %s at: %s\n" "$kg_test_username" "$INSERT_RET_VAL"
+  INSERT_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { Signup(signupParams: {username: \\\"$kg_test_username\\\", password: \\\"$kg_test_username\\\"}) { username } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
+  printf "User signup: %s\n" "$INSERT_RET_VAL"
+  # User signup: {"data":{"Signup":{"username":"ci_test"}}}
+  USERNAME=$( echo "$INSERT_RET_VAL" | jq .data.Signup.username | tr -d '"' )
+
+  if [[ "$USERNAME" != "$kg_test_username" ]]; then
+    printf "error: username [%s] not matching expected value [%s]!" "$USERNAME" "$kg_test_username"
+    exit 1;
+  fi
 
   # 2. add a topic
   TOPIC_ID_RESULT=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_topics(objects: {users_username: \\\"$kg_test_username\\\", name: \\\"$kg_test_topicname\\\"}) { returning { id } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )

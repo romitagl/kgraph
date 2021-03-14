@@ -1,7 +1,10 @@
 include ../../common/common.mk
 
+CI_ENV := export HASURA_CURL_POST_COMMAND="curl -v -H X-Hasura-Admin-Secret:$$HASURA_GRAPHQL_ADMIN_SECRET -d" && \
+	  export HASURA_GRAPHQL_ENDPOINT="http://localhost:8080/v1/graphql"
+
 .PHONY: ci
-ci:: dependencies start install_schema_and_metadata test stop
+ci:: dependencies start install_schema_and_metadata add_default_config test stop
 
 .PHONY: dependencies
 dependencies:
@@ -23,13 +26,18 @@ install_schema_and_metadata:
 	@echo "installing sql schema and graphql metadata"
 	until docker-compose exec -T postgres pg_isready; do echo "waiting for Postgresql service to be ready - retrying in 10 seconds..."; sleep 10; done
 	until nc -z localhost 8080; do echo "waiting for Hasura service to be ready - retrying in 10 seconds..."; sleep 10; done
-	@echo $(shell echo `pwd` )
-	sh ./utils/import-schema-hasura.sh
-	sh -x ./utils/import-metadata-hasura.sh ./schema/hasura-metadata-dump.json
+	@echo $(shell pwd)
+	bash ./utils/import-schema-hasura.sh
+	bash -x ./utils/import-metadata-hasura.sh ./schema/hasura-metadata-dump.json
+
+.PHONY: add_default_config
+add_default_config:
+	$(CI_ENV) && bash -x ./schema/add-default-postgres-config.sh
 
 .PHONY: test
 test:
 	# run graphql + import/export t tests
-	export HASURA_CURL_POST_COMMAND="curl -H X-Hasura-Admin-Secret:$$HASURA_GRAPHQL_ADMIN_SECRET -d" && \
-	  export HASURA_GRAPHQL_ENDPOINT="http://localhost:8080/v1/graphql" && \
+	$(CI_ENV) && \
 		make --directory=./test graphql import_export
+	$(CI_ENV) && \
+		make --directory=./auth test

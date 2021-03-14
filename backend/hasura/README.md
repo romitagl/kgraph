@@ -4,7 +4,7 @@ This folder contains the Postgresql database and Graphql Engine files.
 
 ## Dependencies
 
-All the services run in a **Docker** container and are orchestrated through  [Docker Compose](https://docs.docker.com/compose/).
+All the services run in a **Docker** container and are orchestrated through [Docker Compose](https://docs.docker.com/compose/).
 
 **GNU make** is also required for running the tests.
 
@@ -15,6 +15,11 @@ Set the required environment variables:
 ```bash
 # set the admin secret for Hasura - can be generated random: `openssl rand -base64 32`
 export HASURA_GRAPHQL_ADMIN_SECRET="hasura-admin-secret"
+# set the Hasura JWT secret as described at: https://hasura.io/docs/latest/graphql/core/auth/authentication/jwt.html, https://hasura.io/docs/latest/graphql/core/actions/codegen/python-flask.html#actions-codegen-python-flask
+export HASURA_GRAPHQL_JWT_SECRET_TYPE='HS256'
+# set the JWT secret key for Hasura - can be generated random: `openssl rand -base64 68`
+export HASURA_GRAPHQL_JWT_SECRET_KEY=$(openssl rand -base64 68)
+export HASURA_GRAPHQL_JWT_SECRET="{ \"type\": \"${HASURA_GRAPHQL_JWT_SECRET_TYPE}\", \"key\": \"${HASURA_GRAPHQL_JWT_SECRET_KEY}\" }"
 # Set to "true" to enable the Hasura GraphQL console (development). Set to "false" for production.
 export HASURA_GRAPHQL_ENABLE_CONSOLE="true"
 ```
@@ -77,3 +82,4 @@ To run the tests: `make ci`
 - SQL Schema export: run `bash ./utils/export-schema-hasura.sh`. Schema is exported to the *schema/hasura-schema-dump-exported.sql* file (folder shared as docker-compose volume)
 - SQL Data export: run `bash ./utils/export-data-hasura.sh`. SQL Data is exported to the *schema/hasura-data-exported.sql* file (folder shared as docker-compose volume)
 - SQL Full Dump export: run `bash ./utils/export-dump-hasura.sh`. SQL Data is exported to the *schema/hasura-dump-exported.sql* file (folder shared as docker-compose volume)
+- Authentication service build: `docker-compose build auth-service`

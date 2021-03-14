@@ -1,7 +1,3 @@
--- DEVELOPER CHANGES - FIX gen_random_uuid() does not exist:
--- DROP EXTENSION IF EXISTS pgcrypto;
-CREATE EXTENSION IF NOT EXISTS pgcrypto; -- to use gen_random_uuid
-
 --
 -- PostgreSQL database dump
 --
@@ -53,17 +49,37 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: roles; Type: TABLE; Schema: kgraph; Owner: postgres
+--
+
+CREATE TABLE kgraph.roles (
+    name text NOT NULL,
+    description text,
+    "default" boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE kgraph.roles OWNER TO postgres;
+
+--
+-- Name: TABLE roles; Type: COMMENT; Schema: kgraph; Owner: postgres
+--
+
+COMMENT ON TABLE kgraph.roles IS 'users roles';
+
+
+--
 -- Name: topics; Type: TABLE; Schema: kgraph; Owner: postgres
 --
 
 CREATE TABLE kgraph.topics (
     id uuid DEFAULT public.gen_random_uuid() NOT NULL,
     users_username text NOT NULL,
+    parent_id uuid,
     name text NOT NULL,
     content text,
     tags text,
     public boolean DEFAULT false NOT NULL,
-    parent_id uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -84,9 +100,14 @@ COMMENT ON TABLE kgraph.topics IS 'topics table';
 
 CREATE TABLE kgraph.users (
     username text NOT NULL,
+    roles_name text NOT NULL,
     display_name text,
+    email character varying,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    password_hash character varying NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    data json
 );
 
 
@@ -100,11 +121,35 @@ COMMENT ON TABLE kgraph.users IS 'users table';
 
 
 --
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (name);
+
+
+--
 -- Name: topics topics_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
 ALTER TABLE ONLY kgraph.topics
-    ADD CONSTRAINT topics_pkey PRIMARY KEY (users_username, name);
+    ADD CONSTRAINT topics_pkey PRIMARY KEY (id, users_username);
+
+
+--
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
 
 
 --
@@ -113,6 +158,14 @@ ALTER TABLE ONLY kgraph.topics
 
 ALTER TABLE ONLY kgraph.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (username);
+
+
+--
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
 
 
 --
@@ -152,5 +205,22 @@ ALTER TABLE ONLY kgraph.topics
 
 
 --
+-- Name: users users_roles_name_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users
+    ADD CONSTRAINT users_roles_name_fkey FOREIGN KEY (roles_name) REFERENCES kgraph.roles(name) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: users users_roles_name_fkey2; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users
+    ADD CONSTRAINT users_roles_name_fkey2 FOREIGN KEY (roles_name) REFERENCES kgraph.roles(name) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
 -- PostgreSQL database dump complete
 --
+

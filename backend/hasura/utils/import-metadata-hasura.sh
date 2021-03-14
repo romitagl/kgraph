@@ -11,6 +11,6 @@ fi
 JSON_METADATA=$( cat "$1" )
 CURL_DATA='{"type" : "replace_metadata", "args": '$JSON_METADATA' }'
 
-curl -v -H "X-Hasura-Admin-Secret:$HASURA_GRAPHQL_ADMIN_SECRET"  -H  'Content-Type: application/json' -H "X-Hasura-Role: admin" \
+curl -v -H "X-Hasura-Admin-Secret:$HASURA_GRAPHQL_ADMIN_SECRET" -H 'Content-Type: application/json' \
 -d "$CURL_DATA" \
 http://localhost:8080/v1/query

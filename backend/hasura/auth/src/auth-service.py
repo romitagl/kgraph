@@ -44,7 +44,7 @@ class Client:
                 method="POST", url=self.url, headers=self.headers, body=encoded_data
             )
             jsonData = json.loads(response.data.decode("utf-8"))
-            logging.info(f"\n\n\nDEBUG jsonData:\n{jsonData}")
+            # logging.info(f"\n\n\nDEBUG jsonData:\n{jsonData}")
             data: list = jsonData.get("data")
             if not data:
                 logging.info("no data found in the data json property")

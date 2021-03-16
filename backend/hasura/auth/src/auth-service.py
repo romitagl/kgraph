@@ -132,7 +132,7 @@ def generate_token(user) -> str:
     """
     payload = {
         "https://hasura.io/jwt/claims": {
-            "x-hasura-allowed-roles": user["role"],
+            "x-hasura-allowed-roles": [user["role"]],
             "x-hasura-default-role": user["role"],
             "X-Hasura-User-Id": user["username"],
         }

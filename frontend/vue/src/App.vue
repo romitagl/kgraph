@@ -1,15 +1,18 @@
 <template>
 <v-app>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
+  
+  <!-- <div id="nav">
+      <router-link to="/">Login</router-link> |
       <router-link to="/kgraphadmin">KGraphAdmin</router-link> |
       <router-link to="/kgraphuser">KGraphUser</router-link>
-    </div>
+  </div> -->
     <router-view/>
+    
   </div>
 </v-app>
 </template>
+
 
 <style>
 #app {
@@ -17,6 +20,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  align-content: center;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
   color: #2c3e50;
 }
 

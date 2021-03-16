@@ -2,24 +2,7 @@
   <div class="kgraphuser">
     <ul>
       <li>
-        <!-- list all users -->
-        <ApolloQuery :query="require('../graphql/ListUsers.gql')">
-          <div slot-scope="{ result: { data } }">
-            <label for="select-name" class="label">Select user</label>
-            <template v-if="data">
-              <select v-model="selectedUser" id="select-name">
-                <option
-                  v-for="user of data.kgraph_users"
-                  :key="user.username"
-                  v-bind:value="user.username"
-                >
-                  {{ user.username }}
-                </option>
-              </select>
-              <div>Selected: {{ selectedUser }}</div>
-            </template>
-          </div>
-        </ApolloQuery>
+        <div>Selected: {{ selectedUser }}</div>
       </li>
     </ul>
     <ul>
@@ -384,6 +367,7 @@ export default {
   },
   created() {
     this.network = null;
+    this.selectedUser = this.$route.query.username;
   },
   mounted() {
     this.buildVisGraph()

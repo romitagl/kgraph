@@ -41,7 +41,7 @@ module.exports = {
 }
 ```
 
-Remember also to set the values for the environment variables in the `.env` file. Example `export HASURA_GRAPHQL_ADMIN_SECRET="hasura-admin-secret"` as explained in the [Hasura README](../backend/hasura/README.md).
+Remember also to set the values for the environment variables in the `.env` file.
 
 ### Cypress testing
 

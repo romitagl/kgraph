@@ -1,7 +1,7 @@
 include ../../common/common.mk
 
 CI_ENV := export HASURA_CURL_POST_COMMAND="curl -v -H X-Hasura-Admin-Secret:$$HASURA_GRAPHQL_ADMIN_SECRET -d" && \
-	  export HASURA_GRAPHQL_ENDPOINT="http://localhost:8080/v1/graphql"
+	  export HASURA_GRAPHQL_ENDPOINT="http://127.0.0.1:8080/v1/graphql"
 
 .PHONY: ci
 ci:: dependencies start install_schema_and_metadata add_default_config test stop
@@ -25,7 +25,7 @@ stop:
 install_schema_and_metadata:
 	@echo "installing sql schema and graphql metadata"
 	until docker-compose exec -T postgres pg_isready; do echo "waiting for Postgresql service to be ready - retrying in 10 seconds..."; sleep 10; done
-	until nc -z localhost 8080; do echo "waiting for GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
+	until nc -z 127.0.0.1 8080; do echo "waiting for GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
 	@echo $(shell pwd)
 	bash ./utils/import-schema-hasura.sh
 	bash -x ./utils/import-metadata-hasura.sh ./schema/hasura-metadata-dump.json

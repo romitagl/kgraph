@@ -2,7 +2,7 @@
 
 if [[ ! $HASURA_CURL_POST_COMMAND || ! "$HASURA_GRAPHQL_ENDPOINT" ]]; then printf "missing required test env variables\n" && exit 1; fi
 
-while [[ $( curl -o -I -L -w "%{http_code}" "$HASURA_GRAPHQL_ENDPOINT" ) != 404 ]] ; do echo "waiting for Hasura GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
+while [[ $( curl -o /dev/null -L -I -w "%{http_code}" "$HASURA_GRAPHQL_ENDPOINT" ) != 404 ]] ; do echo "waiting for Hasura GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
 
 kg_test_username=${KG_TEST_USERNAME:-"ci_test"}
 kg_test_topicname=${TOPICNAME:-"test topic"}

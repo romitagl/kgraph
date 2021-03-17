@@ -36,7 +36,8 @@ add_default_config:
 
 .PHONY: test
 test:
-	# run graphql + import/export t tests
+		until nc -z localhost 8080; do echo "waiting for Hasura service to be ready - retrying in 10 seconds..."; sleep 10; done
+	# run graphql + import/export tests
 	$(CI_ENV) && \
 		make --directory=./test graphql import_export
 	$(CI_ENV) && \

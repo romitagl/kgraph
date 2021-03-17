@@ -522,7 +522,6 @@ export default {
           variables: {
             topicsName: this.addTopicName,
             content: this.addTopicContent,
-            username: this.selectedUser,
             parent_id: (child ? this.selectedNodeID : null)
           }
         })

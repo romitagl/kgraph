@@ -64,8 +64,7 @@
         <ApolloMutation
           :mutation="require('../graphql/AddTopicForUser.gql')"
           :variables="{
-            topicsName: topicName,
-            username: selectedUser
+            topicsName: topicName
           }"
           @done="onTopicAdded"
         >

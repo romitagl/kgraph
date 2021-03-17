@@ -15,13 +15,13 @@ console.log(process.env)
 const httpEndpoint = process.env.VUE_APP_GRAPHQL_HTTP || 'http://localhost:8080/v1/graphql'
 
 const getHeaders = () => {
-  const headers = {'content-type': 'application/json'};
-   const token = window.localStorage.getItem('auth_token');
-   if (token) {
-     headers.authorization = `Bearer ${token}`;
-   }
-   return headers;
- };
+  const headers = { 'content-type': 'application/json' }
+  const token = window.localStorage.getItem('auth_token')
+  if (token) {
+    headers.authorization = `Bearer ${token}`
+  }
+  return headers
+}
 
 // https://hasura.io/learn/graphql/vue/apollo-client/
 const httpLink = new createHttpLink({
@@ -33,16 +33,16 @@ export function createProvider () {
   const apolloClient = new ApolloClient({
     link: httpLink,
     cache: new InMemoryCache({ addTypename: true })
-  });
-  
-  Vue.use(VueApollo);
+  })
+
+  Vue.use(VueApollo)
 
   const apolloProvider = new VueApollo({
     defaultClient: apolloClient,
     defaultOptions: {
       $loadingKey: 'loading'
     }
-  });
+  })
 
   return apolloProvider
 }

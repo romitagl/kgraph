@@ -1,5 +1,5 @@
-mutation addTopicForUser($topicsName: String!, $username: String!, $parent_id: uuid, $content: String, $tags: String) {
-  insert_kgraph_topics(objects: {name: $topicsName, users_username: $username, parent_id: $parent_id, content: $content, tags: $tags}) {
+mutation addTopicForUser($topicsName: String!, $parent_id: uuid, $content: String, $tags: String) {
+  insert_kgraph_topics(objects: {name: $topicsName, parent_id: $parent_id, content: $content, tags: $tags}) {
     returning {
       created_at id
     }

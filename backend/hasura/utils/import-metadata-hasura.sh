@@ -7,6 +7,8 @@ else
   printf "installing the following metadata:\n%s\n" "$( cat "$1" )"
 fi
 
+while [[ $( curl -o -I -L -w "%{http_code}" http://localhost:8080/v1/query ) != 404 ]] ; do echo "waiting for Hasura GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
+
 # replace_metadata is used to replace/import metadata into Hasura. Existing metadata will be replaced with the new one.
 JSON_METADATA=$( cat "$1" )
 CURL_DATA='{"type" : "replace_metadata", "args": '$JSON_METADATA' }'

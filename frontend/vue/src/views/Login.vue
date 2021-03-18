@@ -86,7 +86,7 @@
                               label="Username"
                               required
                           ></v-text-field>
-                          <v-text-field
+                          <!-- <v-text-field
                               v-model="createFullName"
                               label="Full Name"
                               required
@@ -96,7 +96,7 @@
                               :rules="emailRules"
                               label="Email Address"
                               required
-                          ></v-text-field>
+                          ></v-text-field> -->
                           <v-text-field
                               v-model="createPassword"
                               :rules="passRules"
@@ -110,9 +110,9 @@
                           <v-btn
                               large
                               block
-                              :disabled="createUsername.length === 0 || createFullName.length === 0 || createEmail.length === 0 || createPassword === 0"
+                              :disabled="createUsername.length === 0 || createPassword === 0"
                               color="primary"
-                              @click="login"
+                              @click="signup"
                           >
                             Create your account</v-btn>
                         </v-col>
@@ -148,6 +148,16 @@
 </template>
 
 <script>
+
+  function setLocalStorageValues(auth_token, username) {
+    window.localStorage.setItem('auth_token', auth_token);
+    window.localStorage.setItem('username', username);
+  }
+  
+  function resetLocalStorageValues() {
+    window.localStorage.removeItem('auth_token');
+    window.localStorage.removeItem('username');
+  }
 
   export default {
     name: 'Login',
@@ -191,18 +201,42 @@
 
         const auth_token = result.data.Login.token;
         // store the Bearer token to use in the Authorization header for posting GraphQL requests
-        window.localStorage.setItem('auth_token', auth_token);
+        setLocalStorageValues(auth_token, this.username);
         // https://router.vuejs.org/guide/essentials/navigation.html
-        this.$router.push( {path: '/kgraphuser', query: { username: this.username } });
-      }
+        // this.$router.push( {path: '/kgraphuser', query: { username: this.username } });
+        this.$router.push( { path: '/kgraphuser' } );
     },
-      created() {
-      if (window.localStorage.getItem('authenticated') === 'true') {
-        // this.$router.push( {path: '/kgraphuser'});
+    async signup(){
+      console.log("signup() createUsername: ", this.createUsername);
+      resetLocalStorageValues();
+
+      var result = null;
+      try {
+        result = await this.$apollo.mutate({
+          mutation: require('../graphql/Signup.gql'),
+          variables: {
+            username: this.createUsername,
+            password: this.createPassword
+          }
+        })
       }
+      catch (error) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      this.username = result.data.Signup.username;
+      this.password = this.createPassword;
+      alert("username: " + this.username + " created successfully - you can now login");
+    },
+    created() {
+      // if (window.localStorage.getItem('auth_token')) {
+      //   this.$router.push( {path: '/kgraphuser', query: { username: this.username } });
+      // }
     }
   }
-
+}
 </script>
 
 

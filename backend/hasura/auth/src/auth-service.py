@@ -1,6 +1,7 @@
 # https://hasura.io/docs/latest/graphql/core/auth/authentication/jwt.html
 # https://hasura.io/docs/latest/graphql/core/actions/codegen/python-flask.html#actions-codegen-python-flask
 
+import hashlib
 import json
 import logging
 import os
@@ -8,8 +9,7 @@ from dataclasses import dataclass
 
 import jwt
 import urllib3
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+import uuid
 from flask import Flask, request
 from urllib3.poolmanager import PoolManager
 
@@ -32,11 +32,11 @@ http: PoolManager = None
 
 
 @dataclass
-class Client:
+class GraphQLClient:
     url: str
     headers: dict
 
-    def run_query(self, query: str, variables: dict):
+    def graphql_http_request(self, query: str, variables: dict):
         try:
             payload = {"query": query, "variables": variables}
             encoded_data = json.dumps(payload).encode("utf-8")
@@ -47,18 +47,18 @@ class Client:
             # logging.info(f"\n\n\nDEBUG jsonData:\n{jsonData}")
             data: list = jsonData.get("data")
             if not data:
-                logging.info("no data found in the data json property")
+                logging.info("graphql_http_request - no data found in the data json property")
                 return None
             return data
         except urllib3.exceptions.HTTPError as e:
-            logging.error(f"failed processing HTTP exception: {e}")
+            logging.error(f"graphql_http_request - failed processing HTTP exception: {e}")
             return None
         except Exception as e:
-            logging.error(f"failed processing - exception: {e}")
+            logging.error(f"graphql_http_request - failed processing - exception: {e}")
             return None
 
     def get_default_role(self):
-        response = self.run_query(
+        response = self.graphql_http_request(
             """
           query GetDefaultRole {
                 kgraph_roles(where: {default: {_eq: true}}, limit: 1) {
@@ -69,10 +69,12 @@ class Client:
             {},
         )
         # {'data': {'kgraph_roles': [{'name': 'registred_user'}]}}
+        if response is None:
+            return None
         return response.get("kgraph_roles")[0].get("name")
 
     def find_user_by_username(self, username: str):
-        response = self.run_query(
+        response = self.graphql_http_request(
             """
             query UserByUsername($username: String!) {
                 kgraph_users(where: {username: {_eq: $username}}, limit: 1) {
@@ -91,7 +93,7 @@ class Client:
         return {"username": username, "password": password, "role": role}
 
     def create_user(self, username: str, password: str, roles_name: str):
-        response = self.run_query(
+        response = self.graphql_http_request(
             """
             mutation CreateUser($username: String!, $password: String!, $roles_name: String!) {
                 insert_kgraph_users_one(object: {username: $username, password_hash: $password, roles_name: $roles_name}) {
@@ -102,10 +104,12 @@ class Client:
             {"username": username, "password": password, "roles_name": roles_name},
         )
         # {'data': {'insert_kgraph_users_one': {'username': 'test'}}}
+        if response is None:
+            return None
         return response.get("insert_kgraph_users_one").get("username")
 
     def update_password(self, username: str, password: str):
-        self.run_query(
+        response = self.graphql_http_request(
             """
             mutation UpdatePassword($username: String!, $password: String!) {
                 update_kgraph_users_by_pk(pk_columns: {username: $username}, _set: {password_hash: $password}) {
@@ -115,6 +119,9 @@ class Client:
         """,
             {"username": username, "password": password},
         )
+        # logging.info(f"update_password response:{response}")
+        if response is None:
+            return None
 
 
 #######
@@ -122,8 +129,7 @@ class Client:
 #######
 
 
-Password = PasswordHasher()
-client = Client(url=HASURA_URL, headers=HASURA_HEADERS)
+client = GraphQLClient(url=HASURA_URL, headers=HASURA_HEADERS)
 
 
 def generate_token(user) -> str:
@@ -141,9 +147,19 @@ def generate_token(user) -> str:
     return token
 
 
-def rehash_and_save_password_if_needed(user, plaintext_password):
-    if Password.check_needs_rehash(user["password"]):
-        client.update_password(user["username"], Password.hash(plaintext_password))
+# https://www.pythoncentral.io/hashing-strings-with-python/#:~:text=The%20hashlib%20module,%20included%20in%20The%20Python%20Standard,made%20to%20work%20in%20Python%203.2%20and%20above.
+def hash_password(password):
+    # uuid is used to generate a random number
+    password = password.strip()
+    salt = uuid.uuid4().hex
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
+
+
+def check_password_ok(hashed_password, user_password):
+    user_password = user_password.strip()
+    password, salt = hashed_password.split(':')
+    user_password_hash = hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
+    return password == user_password_hash
 
 
 ##############
@@ -157,33 +173,46 @@ app = Flask(__name__)
 @app.route("/signup", methods=["POST"])
 def signup_handler():
     args = request.get_json().get("input").get("signupParams")
-    hashed_password = Password.hash(args.get("password"))
-    roles_name = client.get_default_role()
-    if roles_name is None:
-        return {"message": "default role not found"}, 400
-    else:
-        username = client.create_user(args.get("username"), hashed_password, roles_name)
-        if username is None:
-            return {"message": "failed creating user"}, 400
+    try:
+        user_password = args.get("password")
+        hash_pwd = hash_password(user_password)
+
+        roles_name = client.get_default_role()
+        if roles_name is None:
+            return {"message": "default role not found"}, 400
         else:
-            create_user_response = {"username": username}
-            return json.dumps(create_user_response).encode("utf-8")
+            username = client.create_user(args.get("username"), hash_pwd, roles_name)
+            logging.info(f"signup username:{username}")
+            if username is None:
+                return {"message": "failed creating user"}, 400
+            else:
+                create_user_response = {"username": username}
+                return json.dumps(create_user_response).encode("utf-8")
+    except Exception as exc:
+        logging.error(f"signup exception: {exc}")
+        return {"message": f"failed to signup user - {exc}"}, 401
 
 
 @app.route("/login", methods=["POST"])
 def login_handler():
+    # logging.info(f"login request args:{request.get_json()}")
     args = request.get_json().get("input").get("loginParams")
     user = client.find_user_by_username(args.get("username"))
+    print(f"find_user_by_username:{user}")
     if user is None:
         return {"message": "user not found"}, 400
     try:
-        Password.verify(user.get("password"), args.get("password"))
-        rehash_and_save_password_if_needed(user, args.get("password"))
+        hashed_password = user.get("password")
+        user_password = args.get("password")
+        if check_password_ok(hashed_password=hashed_password, user_password=user_password) == False:
+            raise Exception("failed verify login credentials")
+
         token = generate_token(user)
         payload = {"token": token}
         return json.dumps(payload).encode("utf-8")
-    except VerifyMismatchError:
-        return {"message": "invalid credentials"}, 401
+    except Exception as exc:
+        logging.error(f"login exception: {exc}")
+        return {"message": f"failed to login - {exc}"}, 401
 
 
 if __name__ == "__main__":

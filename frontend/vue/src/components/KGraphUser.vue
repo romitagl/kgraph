@@ -367,7 +367,8 @@ export default {
   },
   created() {
     this.network = null;
-    this.selectedUser = this.$route.query.username;
+    //this.$route.query.username;
+    this.selectedUser = window.localStorage.getItem('username');
   },
   mounted() {
     this.buildVisGraph()

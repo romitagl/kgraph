@@ -47,11 +47,15 @@ class GraphQLClient:
             # logging.info(f"\n\n\nDEBUG jsonData:\n{jsonData}")
             data: list = jsonData.get("data")
             if not data:
-                logging.info("graphql_http_request - no data found in the data json property")
+                logging.info(
+                    "graphql_http_request - no data found in the data json property"
+                )
                 return None
             return data
         except urllib3.exceptions.HTTPError as e:
-            logging.error(f"graphql_http_request - failed processing HTTP exception: {e}")
+            logging.error(
+                f"graphql_http_request - failed processing HTTP exception: {e}"
+            )
             return None
         except Exception as e:
             logging.error(f"graphql_http_request - failed processing - exception: {e}")
@@ -152,13 +156,15 @@ def hash_password(password):
     # uuid is used to generate a random number
     password = password.strip()
     salt = uuid.uuid4().hex
-    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
+    return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ":" + salt
 
 
 def check_password_ok(hashed_password, user_password):
     user_password = user_password.strip()
-    password, salt = hashed_password.split(':')
-    user_password_hash = hashlib.sha256(salt.encode() + user_password.encode()).hexdigest()
+    password, salt = hashed_password.split(":")
+    user_password_hash = hashlib.sha256(
+        salt.encode() + user_password.encode()
+    ).hexdigest()
     return password == user_password_hash
 
 
@@ -204,7 +210,12 @@ def login_handler():
     try:
         hashed_password = user.get("password")
         user_password = args.get("password")
-        if check_password_ok(hashed_password=hashed_password, user_password=user_password) is False:
+        if (
+            check_password_ok(
+                hashed_password=hashed_password, user_password=user_password
+            )
+            is False
+        ):
             raise Exception("failed verify login credentials")
 
         token = generate_token(user)

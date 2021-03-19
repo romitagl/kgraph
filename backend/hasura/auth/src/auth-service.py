@@ -204,7 +204,7 @@ def login_handler():
     try:
         hashed_password = user.get("password")
         user_password = args.get("password")
-        if check_password_ok(hashed_password=hashed_password, user_password=user_password) == False:
+        if check_password_ok(hashed_password=hashed_password, user_password=user_password) is False:
             raise Exception("failed verify login credentials")
 
         token = generate_token(user)

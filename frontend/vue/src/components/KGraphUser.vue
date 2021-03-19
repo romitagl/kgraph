@@ -134,14 +134,14 @@
               </template>
               <template v-if="selectedNodeID != ''">
                 <v-list-item>
-                  <v-btn 
+                  <v-btn
                     color="primary"
                     text
                     @click="onDeleteNode();"
                   >Delete Node</v-btn>
                 </v-list-item>
                 <v-list-item>
-                  <v-btn 
+                  <v-btn
                     color="primary"
                     text
                     @click="onUpdateNode();"

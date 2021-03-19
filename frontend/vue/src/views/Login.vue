@@ -7,7 +7,7 @@
           <div class="login-wrapper pt-md-4 pt-0">
             <v-tabs grow>
               <v-tabs-slider></v-tabs-slider>
-              <v-tab :href="`#tab-login`">
+              <v-tab :href="`#tab-login`" id="tab-login">
                 LOGIN
               </v-tab>
               <v-tab :href="`#tab-newUser`">
@@ -150,8 +150,8 @@
 <script>
 
   async function setLocalStorageValues(auth_token, username) {
-    await window.sessionStorage.setItem('auth_token', auth_token);
-    await window.sessionStorage.setItem('username', username);
+    window.sessionStorage.setItem('auth_token', auth_token);
+    window.sessionStorage.setItem('username', username);
   }
   
   function resetLocalStorageValues() {
@@ -213,6 +213,7 @@ export default {
       },
       async signup(){
         console.log("signup() createUsername: ", this.createUsername);
+
         resetLocalStorageValues();
 
         var result = null;
@@ -234,6 +235,7 @@ export default {
         this.username = result.data.Signup.username;
         this.password = this.createPassword;
         alert("username: " + this.username + " created successfully - you can now login");
+        document.getElementById('tab-login').click();
       }
     }
 }

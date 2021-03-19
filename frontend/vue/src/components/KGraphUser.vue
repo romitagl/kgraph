@@ -368,7 +368,11 @@ export default {
   created() {
     this.network = null;
     //this.$route.query.username;
-    this.selectedUser = window.localStorage.getItem('username');
+    if (window.sessionStorage.getItem('auth_token')) {
+      this.selectedUser = window.sessionStorage.getItem('username');
+    } else {
+      this.$router.push( {path: '/' });
+    }
   },
   mounted() {
     this.buildVisGraph()

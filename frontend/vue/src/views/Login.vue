@@ -149,17 +149,16 @@
 
 <script>
 
-  function setLocalStorageValues(auth_token, username) {
-    window.localStorage.setItem('auth_token', auth_token);
-    window.localStorage.setItem('username', username);
+  async function setLocalStorageValues(auth_token, username) {
+    await window.sessionStorage.setItem('auth_token', auth_token);
+    await window.sessionStorage.setItem('username', username);
   }
   
   function resetLocalStorageValues() {
-    window.localStorage.removeItem('auth_token');
-    window.localStorage.removeItem('username');
+    window.sessionStorage.clear();
   }
 
-  export default {
+export default {
     name: 'Login',
     data() {
       return {
@@ -180,9 +179,16 @@
         ]
       }
     },
+    created() {
+      console.log("created")
+      if (window.sessionStorage.getItem('auth_token')) {
+        this.$router.push( {path: '/kgraphuser' });
+      }
+    },
     methods: {
       async login(){
         console.log("login() username: ", this.username)
+        resetLocalStorageValues();
         var result = null;
         try {
           result = await this.$apollo.mutate({
@@ -201,41 +207,35 @@
 
         const auth_token = result.data.Login.token;
         // store the Bearer token to use in the Authorization header for posting GraphQL requests
-        setLocalStorageValues(auth_token, this.username);
+        setLocalStorageValues(auth_token, this.username).then(() => { location.reload() })
         // https://router.vuejs.org/guide/essentials/navigation.html
         // this.$router.push( {path: '/kgraphuser', query: { username: this.username } });
-        this.$router.push( { path: '/kgraphuser' } );
-    },
-    async signup(){
-      console.log("signup() createUsername: ", this.createUsername);
-      resetLocalStorageValues();
+      },
+      async signup(){
+        console.log("signup() createUsername: ", this.createUsername);
+        resetLocalStorageValues();
 
-      var result = null;
-      try {
-        result = await this.$apollo.mutate({
-          mutation: require('../graphql/Signup.gql'),
-          variables: {
-            username: this.createUsername,
-            password: this.createPassword
-          }
-        })
-      }
-      catch (error) {
-        console.error(error.message);
-        alert(error.message);
-        return;
-      }
+        var result = null;
+        try {
+          result = await this.$apollo.mutate({
+            mutation: require('../graphql/Signup.gql'),
+            variables: {
+              username: this.createUsername,
+              password: this.createPassword
+            }
+          })
+        }
+        catch (error) {
+          console.error(error.message);
+          alert(error.message);
+          return;
+        }
 
-      this.username = result.data.Signup.username;
-      this.password = this.createPassword;
-      alert("username: " + this.username + " created successfully - you can now login");
-    },
-    created() {
-      // if (window.localStorage.getItem('auth_token')) {
-      //   this.$router.push( {path: '/kgraphuser', query: { username: this.username } });
-      // }
+        this.username = result.data.Signup.username;
+        this.password = this.createPassword;
+        alert("username: " + this.username + " created successfully - you can now login");
+      }
     }
-  }
 }
 </script>
 

@@ -16,7 +16,7 @@ const httpEndpoint = process.env.VUE_APP_GRAPHQL_HTTP || 'http://localhost:8080/
 
 const getHeaders = () => {
   const headers = { 'content-type': 'application/json' }
-  const token = window.localStorage.getItem('auth_token')
+  const token = window.sessionStorage.getItem('auth_token')
   if (token) {
     headers.authorization = `Bearer ${token}`
   }

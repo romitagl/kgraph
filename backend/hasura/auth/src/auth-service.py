@@ -5,11 +5,11 @@ import hashlib
 import json
 import logging
 import os
+import uuid
 from dataclasses import dataclass
 
 import jwt
 import urllib3
-import uuid
 from flask import Flask, request
 from urllib3.poolmanager import PoolManager
 

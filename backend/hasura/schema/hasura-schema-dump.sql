@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.5 (Debian 12.5-1.pgdg100+1)
--- Dumped by pg_dump version 12.5 (Debian 12.5-1.pgdg100+1)
+-- Dumped from database version 12.6 (Debian 12.6-1.pgdg100+1)
+-- Dumped by pg_dump version 12.6 (Debian 12.6-1.pgdg100+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -134,6 +134,14 @@ ALTER TABLE ONLY kgraph.roles
 
 ALTER TABLE ONLY kgraph.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (name);
+
+
+--
+-- Name: topics topics_name_users_username_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics
+    ADD CONSTRAINT topics_name_users_username_key UNIQUE (name, users_username);
 
 
 --

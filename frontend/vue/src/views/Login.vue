@@ -44,10 +44,9 @@
                           ></v-text-field> -->
                           <v-text-field
                               v-model="password"
-                              :rules="passRules"
+                              :rules="loginPassRules"
                               type="password"
                               label="Password"
-                              hint="At least 8 characters"
                               required
                           ></v-text-field>
 
@@ -99,7 +98,7 @@
                           ></v-text-field> -->
                           <v-text-field
                               v-model="createPassword"
-                              :rules="passRules"
+                              :rules="signupPassRules"
                               type="password"
                               label="Password"
                               hint="At least 8 characters"
@@ -173,7 +172,10 @@ export default {
         createEmail: '',
         createPassword: '',
         password: '',
-        passRules: [
+        loginPassRules: [
+          v => !!v || 'Password is required',
+        ],
+        signupPassRules: [
           v => !!v || 'Password is required',
           v => v.length >= 8 || 'Min 8 characters'
         ]

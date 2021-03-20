@@ -6,7 +6,7 @@ This folder contains the Postgresql database and Graphql Engine files.
 
 All the services run in a **Docker** container and are orchestrated through [Docker Compose](https://docs.docker.com/compose/).
 
-**GNU make** is also required for running the tests.
+**GNU make** and **jq** are also required for running the tests.
 
 ## Setup
 
@@ -82,4 +82,4 @@ To run the tests: `make ci`
 - SQL Schema export: run `bash ./utils/export-schema-hasura.sh`. Schema is exported to the *schema/hasura-schema-dump-exported.sql* file (folder shared as docker-compose volume)
 - SQL Data export: run `bash ./utils/export-data-hasura.sh`. SQL Data is exported to the *schema/hasura-data-exported.sql* file (folder shared as docker-compose volume)
 - SQL Full Dump export: run `bash ./utils/export-dump-hasura.sh`. SQL Data is exported to the *schema/hasura-dump-exported.sql* file (folder shared as docker-compose volume)
-- Authentication service build: `docker-compose build auth-service`
+- Authentication service build: `docker-compose build auth-service`, to follow the logs: `docker-compose logs -f auth-service`

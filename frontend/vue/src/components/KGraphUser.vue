@@ -425,7 +425,8 @@ export default {
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
 
-      this.setTopicFields(node.name, node.title, node.id, node.parent_id);
+      const topic = this.topics.find(obj => obj.id == node.id);
+      this.setTopicFields(topic.name, topic.title, topic.id, topic.parent_id);
       this.network.selectNodes([node.id]);
     },
     onTreeDeselect(){
@@ -566,7 +567,7 @@ export default {
       this.btnAddTopic = true;
     },
     buildVisGraph() {
-      console.log("buildVisGraph")
+      console.log("buildVisGraph");
       if (this.network) {
         this.network.destroy();
         this.network = null;

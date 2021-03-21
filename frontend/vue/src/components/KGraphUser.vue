@@ -2,24 +2,7 @@
   <div class="kgraphuser">
     <ul>
       <li>
-        <!-- list all users -->
-        <ApolloQuery :query="require('../graphql/ListUsers.gql')">
-          <div slot-scope="{ result: { data } }">
-            <label for="select-name" class="label">Select user</label>
-            <template v-if="data">
-              <select v-model="selectedUser" id="select-name">
-                <option
-                  v-for="user of data.kgraph_users"
-                  :key="user.username"
-                  v-bind:value="user.username"
-                >
-                  {{ user.username }}
-                </option>
-              </select>
-              <div>Selected: {{ selectedUser }}</div>
-            </template>
-          </div>
-        </ApolloQuery>
+        <div>Selected: {{ selectedUser }}</div>
       </li>
     </ul>
     <ul>
@@ -151,14 +134,14 @@
               </template>
               <template v-if="selectedNodeID != ''">
                 <v-list-item>
-                  <v-btn 
+                  <v-btn
                     color="primary"
                     text
                     @click="onDeleteNode();"
                   >Delete Node</v-btn>
                 </v-list-item>
                 <v-list-item>
-                  <v-btn 
+                  <v-btn
                     color="primary"
                     text
                     @click="onUpdateNode();"
@@ -384,6 +367,12 @@ export default {
   },
   created() {
     this.network = null;
+    //this.$route.query.username;
+    if (window.sessionStorage.getItem('auth_token')) {
+      this.selectedUser = window.sessionStorage.getItem('username');
+    } else {
+      this.$router.push( {path: '/' });
+    }
   },
   mounted() {
     this.buildVisGraph()
@@ -436,7 +425,8 @@ export default {
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);
 
-      this.setTopicFields(node.name, node.title, node.id, node.parent_id);
+      const topic = this.topics.find(obj => obj.id == node.id);
+      this.setTopicFields(topic.name, topic.title, topic.id, topic.parent_id);
       this.network.selectNodes([node.id]);
     },
     onTreeDeselect(){
@@ -538,7 +528,6 @@ export default {
           variables: {
             topicsName: this.addTopicName,
             content: this.addTopicContent,
-            username: this.selectedUser,
             parent_id: (child ? this.selectedNodeID : null)
           }
         })
@@ -578,7 +567,7 @@ export default {
       this.btnAddTopic = true;
     },
     buildVisGraph() {
-      console.log("buildVisGraph")
+      console.log("buildVisGraph");
       if (this.network) {
         this.network.destroy();
         this.network = null;

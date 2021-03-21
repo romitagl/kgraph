@@ -59,3 +59,4 @@ jobs:
           LINTER_RULES_PATH: .github/linters
           # skip vendor's code checks
           FILTER_REGEX_EXCLUDE: ".*backend/hasura/schema/.*"
+          VALIDATE_JAVASCRIPT_STANDARD: false

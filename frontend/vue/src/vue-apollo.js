@@ -11,34 +11,38 @@ Vue.use(VueApollo)
 // IMPORTANT => ENV variables: https://cli.vuejs.org/guide/mode-and-env.html
 console.log(process.env)
 
-// TODO : replace with user token (non-admin)
-const AUTH_TOKEN = process.env.VUE_APP_HASURA_GRAPHQL_ADMIN_SECRET
-
 // Http endpoint
 const httpEndpoint = process.env.VUE_APP_GRAPHQL_HTTP || 'http://localhost:8080/v1/graphql'
 
+const getHeaders = () => {
+  const headers = { 'content-type': 'application/json' }
+  const token = window.sessionStorage.getItem('auth_token')
+  if (token) {
+    headers.authorization = `Bearer ${token}`
+  }
+  return headers
+}
+
+// https://hasura.io/learn/graphql/vue/apollo-client/
 const httpLink = new createHttpLink({
   uri: httpEndpoint,
-  headers: {
-    'content-type': 'application/json',
-    'x-hasura-admin-secret': AUTH_TOKEN
-  }
+  headers: getHeaders()
 })
 
 export function createProvider () {
   const apolloClient = new ApolloClient({
     link: httpLink,
-    cache: new InMemoryCache()
-  });
-  
-  Vue.use(VueApollo);
+    cache: new InMemoryCache({ addTypename: true })
+  })
+
+  Vue.use(VueApollo)
 
   const apolloProvider = new VueApollo({
     defaultClient: apolloClient,
     defaultOptions: {
       $loadingKey: 'loading'
     }
-  });
+  })
 
   return apolloProvider
 }

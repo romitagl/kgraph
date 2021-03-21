@@ -14,24 +14,23 @@ on:
     paths-ignore:
       # skip CI for documentation updates
       - "**/*.md"
-  push:
-    branches:
-      - master
-      - gl/vue
-    paths-ignore:
-      # skip CI for documentation updates
-      - "**/*.md"
+  # push:
+  #   branches:
+  #     - master
+  #   paths-ignore:
+  #     # skip CI for documentation updates
+  #     - "**/*.md"
 
 jobs:
   run-ci-tests:
     runs-on: ubuntu-latest
-    # if: (github.event.workflow_run.conclusion == 'success' && github.event_name != 'issue_comment' )|| ((github.event_name == 'pull_request_review_comment' || contains(github.event.comment.html_url, '/pull/')) && contains(github.event.comment.body, '/run-ci'))
+    if: (github.event.workflow_run.conclusion == 'success' && github.event_name != 'issue_comment' )|| ((github.event_name == 'pull_request_review_comment' || contains(github.event.comment.html_url, '/pull/')) && contains(github.event.comment.body, '/run-ci'))
     env:
       HASURA_GRAPHQL_ADMIN_SECRET: ${{ secrets.CI_HASURA_GRAPHQL_ADMIN_SECRET }}
       HASURA_GRAPHQL_JWT_SECRET_KEY: ${{ secrets.CI_HASURA_GRAPHQL_JWT_SECRET }}
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
-      HASURA_GRAPHQL_JWT_SECRET_TYPE: HS256
-      HASURA_GRAPHQL_JWT_SECRET: "{ \"type\": \"${HASURA_GRAPHQL_JWT_SECRET_TYPE\", \"key\": \"${HASURA_GRAPHQL_JWT_SECRET_KEY}\" }"
+      HASURA_GRAPHQL_JWT_SECRET_TYPE: 'HS256'
+      HASURA_GRAPHQL_JWT_SECRET: "{ \"type\": \"HS256\", \"key\": \"${HASURA_GRAPHQL_JWT_SECRET_KEY}\" }"
 
     steps:
       - name: Clone Repo - PR

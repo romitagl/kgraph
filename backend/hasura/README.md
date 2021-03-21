@@ -16,7 +16,7 @@ Set the required environment variables:
 # set the admin secret for Hasura - can be generated random: `openssl rand -base64 32`
 export HASURA_GRAPHQL_ADMIN_SECRET="hasura-admin-secret"
 # set the Hasura JWT secret as described at: https://hasura.io/docs/latest/graphql/core/auth/authentication/jwt.html, https://hasura.io/docs/latest/graphql/core/actions/codegen/python-flask.html#actions-codegen-python-flask
-export HASURA_GRAPHQL_JWT_SECRET_TYPE='HS256'
+export HASURA_GRAPHQL_JWT_SECRET_TYPE=HS256
 # set the JWT secret key for Hasura - can be generated random: `openssl rand -base64 68`
 export HASURA_GRAPHQL_JWT_SECRET_KEY=$(openssl rand -base64 68)
 export HASURA_GRAPHQL_JWT_SECRET="{ \"type\": \"${HASURA_GRAPHQL_JWT_SECRET_TYPE}\", \"key\": \"${HASURA_GRAPHQL_JWT_SECRET_KEY}\" }"

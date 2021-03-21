@@ -2,7 +2,7 @@ include ../../../common/common.mk
 
 .PHONY: graphql
 graphql:
-	. ./test-graphql.sh; test_add_topic
+	. ./test-graphql.sh; test_add_topics
 
 .PHONY: import_export
 import_export:
@@ -11,6 +11,6 @@ import_export:
 	# cleanup table records
 	. ./test-graphql.sh; test_drop_all_data
 	cd ../ && bash ./utils/import-data-hasura.sh
-	. ./test-graphql.sh; test_check_ci_topic
+	. ./test-graphql.sh; test_check_ci_topics
 	rm ../schema/hasura-data-exported.sql ../schema/hasura-dump-exported.sql
 	# cd ../ && bash ../utils/import-dump-hasura.sh

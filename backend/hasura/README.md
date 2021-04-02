@@ -83,3 +83,59 @@ To run the tests: `make ci`
 - SQL Data export: run `bash ./utils/export-data-hasura.sh`. SQL Data is exported to the *schema/hasura-data-exported.sql* file (folder shared as docker-compose volume)
 - SQL Full Dump export: run `bash ./utils/export-dump-hasura.sh`. SQL Data is exported to the *schema/hasura-dump-exported.sql* file (folder shared as docker-compose volume)
 - Authentication service build: `docker-compose build auth-service`, to follow the logs: `docker-compose logs -f auth-service`
+
+### Postgresql debugging commands
+
+Connect to the postgres container: `docker-compose exec postgres sh`
+
+```bash
+# login using the postgres user
+psql -U postgres
+
+# display commands help
+postgres-# \?
+
+# display user roles
+postgres=# \du
+
+# show Postgres configuration file named pg_hba.conf 
+postgres=# show hba_file;
+# reload the configuration file while Postgres is running
+postgres=# SELECT pg_reload_conf();
+
+# list databases
+postgres=# \l+
+# connect to a database
+postgres=# \c database_name
+# list schemas
+postgres-# \dn+
+# list current schema
+postgres=# SHOW search_path;
+# set a schema
+postgres=# SET search_path TO target_schema;
+# display tables:
+postgres=# \dt
+# if want to see schema tables
+postgres=# \dt+
+# display columns of a table
+postgres=# \d+ table_name
+# select first row from a table
+postgres=# SELECT * FROM table_name LIMIT 1;
+# count the records in a table
+postgres=# SELECT COUNT(*) FROM table_name;
+# select last row from a table (row count -1)
+postgres=# SELECT * FROM table_name OFFSET row_number ROWS;
+
+# Stop
+pg_ctl stop
+
+# Start
+pg_ctl start
+```
+
+List Docker volumes:
+
+```bash
+docker volume ls
+docker volume inspect ${volume_name}
+```

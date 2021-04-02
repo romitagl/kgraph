@@ -9,7 +9,8 @@ ci:: dependencies start install_schema_and_metadata add_default_config test stop
 .PHONY: dependencies
 dependencies:
 	. ./utils/check-env.sh; verify_hasura_running
-	sudo rm -fr ./postgresql docker-compose.log ; mkdir -p postgresql 
+	docker volume rm -f hasura_postgres_data
+	rm -fr docker-compose.log
 
 .PHONY: start
 start:

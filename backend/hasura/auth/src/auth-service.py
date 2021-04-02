@@ -234,5 +234,6 @@ if __name__ == "__main__":
     )
     # create HTTP pool manager
     http = urllib3.PoolManager(timeout=5.0, retries=3, num_pools=20)
+    from waitress import serve
 
-    app.run(debug=False, host="0.0.0.0", port=3000)
+    serve(app, host="0.0.0.0", port=3000)

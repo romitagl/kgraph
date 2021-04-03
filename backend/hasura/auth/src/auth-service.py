@@ -47,22 +47,23 @@ class GraphQLClient:
             # logging.info(f"\n\n\nDEBUG jsonData:\n{jsonData}")
             data: list = jsonData.get("data")
             if not data:
-                logging.info(
-                    "graphql_http_request - no data found in the data json property"
+                logging.error(
+                    f"graphql_http_request - no data found in the data json property: {jsonData}"
                 )
-                return None
-            return data
+                error = jsonData.get("errors", "no data found")[0].get("message")
+                return None, error
+            return data, None
         except urllib3.exceptions.HTTPError as e:
             logging.error(
                 f"graphql_http_request - failed processing HTTP exception: {e}"
             )
-            return None
+            return None, e
         except Exception as e:
             logging.error(f"graphql_http_request - failed processing - exception: {e}")
-            return None
+            return None, e
 
     def get_default_role(self):
-        response = self.graphql_http_request(
+        response, error = self.graphql_http_request(
             """
           query GetDefaultRole {
                 kgraph_roles(where: {default: {_eq: true}}, limit: 1) {
@@ -78,7 +79,7 @@ class GraphQLClient:
         return response.get("kgraph_roles")[0].get("name")
 
     def find_user_by_username(self, username: str):
-        response = self.graphql_http_request(
+        response, error = self.graphql_http_request(
             """
             query UserByUsername($username: String!) {
                 kgraph_users(where: {username: {_eq: $username}}, limit: 1) {
@@ -97,7 +98,7 @@ class GraphQLClient:
         return {"username": username, "password": password, "role": role}
 
     def create_user(self, username: str, password: str, roles_name: str):
-        response = self.graphql_http_request(
+        response, error = self.graphql_http_request(
             """
             mutation CreateUser($username: String!, $password: String!, $roles_name: String!) {
                 insert_kgraph_users_one(object: {username: $username, password_hash: $password, roles_name: $roles_name}) {
@@ -109,11 +110,18 @@ class GraphQLClient:
         )
         # {'data': {'insert_kgraph_users_one': {'username': 'test'}}}
         if response is None:
-            return None
-        return response.get("insert_kgraph_users_one").get("username")
+            if "duplicate key value violates unique constraint" in error:
+                return None, "username already exists"
+            return None, error
+
+        valid_res = response.get("insert_kgraph_users_one")
+        if not valid_res:
+            return None, response
+
+        return response.get("insert_kgraph_users_one").get("username"), None
 
     def update_password(self, username: str, password: str):
-        response = self.graphql_http_request(
+        response, error = self.graphql_http_request(
             """
             mutation UpdatePassword($username: String!, $password: String!) {
                 update_kgraph_users_by_pk(pk_columns: {username: $username}, _set: {password_hash: $password}) {
@@ -187,11 +195,13 @@ def signup_handler():
         if roles_name is None:
             return {"message": "default role not found"}, 400
         else:
-            username = client.create_user(args.get("username"), hash_pwd, roles_name)
-            logging.info(f"signup username:{username}")
+            username, error = client.create_user(
+                args.get("username"), hash_pwd, roles_name
+            )
             if username is None:
-                return {"message": "failed creating user"}, 400
+                return {"message": f"failed creating user - {error}"}, 400
             else:
+                logging.info(f"signup username:{username}")
                 create_user_response = {"username": username}
                 return json.dumps(create_user_response).encode("utf-8")
     except Exception as exc:

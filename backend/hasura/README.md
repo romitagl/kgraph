@@ -33,6 +33,8 @@ make dependencies
 make start
 # install the PostgreSQL schema and Hasura metadata
 make install_schema_and_metadata
+# add default PostgreSQL configuration
+make add_default_config
 ```
 
 The Hasura console, if enabled (*HASURA_GRAPHQL_ENABLE_CONSOLE=true*), is available at: `http://localhost:8080/console`. Remember to select the `kgraph` Database Schema.
@@ -61,6 +63,7 @@ mv ./schema/hasura-schema-dump-exported.sql ./schema/hasura-schema-dump.sql
 # import the sql schema, metadata and data
 make start
 make install_schema_and_metadata
+make add_default_config
 bash ./utils/import-data-hasura.sh
 ```
 

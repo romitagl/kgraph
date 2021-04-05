@@ -201,7 +201,7 @@ def signup_handler():
             if username is None:
                 return {"message": f"failed creating user - {error}"}, 400
             else:
-                logging.info(f"signup username:{username}")
+                logging.info(f"/signup username: {username}")
                 create_user_response = {"username": username}
                 return json.dumps(create_user_response).encode("utf-8")
     except Exception as exc:
@@ -213,8 +213,9 @@ def signup_handler():
 def login_handler():
     # logging.info(f"login request args:{request.get_json()}")
     args = request.get_json().get("input").get("loginParams")
-    user = client.find_user_by_username(args.get("username"))
-    print(f"find_user_by_username:{user}")
+    username = args.get("username")
+    logging.info(f"/login username: {username}")
+    user = client.find_user_by_username(username)
     if user is None:
         return {"message": "user not found"}, 400
     try:

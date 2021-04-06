@@ -6,7 +6,7 @@ This folder contains the Postgresql database and Graphql Engine files.
 
 All the services run in a **Docker** container and are orchestrated through [Docker Compose](https://docs.docker.com/compose/).
 
-**GNU make** and **jq** are also required for running the tests.
+**GNU make**, **jq**, **curl** and **nc** are also required for running the tests.
 
 ## Setup
 

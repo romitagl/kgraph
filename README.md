@@ -6,6 +6,10 @@
 
 This project aims at creating a knowledge database with hierarchical topic modelling.
 
+## Licensing
+
+**KGraph** is based on open source technologies and released under the [Apache License](./LICENSE).
+
 ## GitHub Actions
 
 ![Lint Code Base](https://github.com/romitagl/kgraph/workflows/Lint%20Code%20Base/badge.svg?branch=master)
@@ -40,5 +44,9 @@ To setup locally the Super Linter follow [these instructions](https://github.com
 Run check on the local folder:
 
 ```bash
-docker run --rm -e RUN_LOCAL=true -e VALIDATE_JAVASCRIPT_STANDARD=false -e FILTER_REGEX_EXCLUDE=".*backend/hasura/schema/.*" -v `pwd`:/tmp/lint github/super-linter:v3.14.5
+docker run --rm -e RUN_LOCAL=true -e VALIDATE_JAVASCRIPT_STANDARD=false -e FILTER_REGEX_EXCLUDE=".*backend/hasura/schema/.*" -v `pwd`:/tmp/lint github/super-linter:v3.15.5
 ```
+
+## Copyright
+
+Copyright (c) [2021] [Gian Luigi Romita]

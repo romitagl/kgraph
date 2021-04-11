@@ -184,7 +184,7 @@ export default {
     created() {
       console.log("created")
       if (window.sessionStorage.getItem('auth_token')) {
-        this.$router.push( {path: '/kgraphuser' });
+        this.$router.push( {path: '/dashboard' });
       }
     },
     methods: {

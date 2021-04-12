@@ -73,7 +73,6 @@
                 <v-list-item
                   link
                   color="grey lighten-4"
-                  inactive="true"
                 >
                   <v-list-item-content>
                     <v-list-item-title>
@@ -160,7 +159,7 @@
                 <!-- https://vuejs.org/v2/api/#v-on -->
                 <template v-slot:activator="{ on }">
                   <v-sheet id="vis-topics-graph" v-on:click.right="on.click" onContextMenu="return false;"
-                    min-height="70vh"
+                    min-height="90vh"
                     rounded="lg"
                   >
                   </v-sheet>

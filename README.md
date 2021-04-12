@@ -44,7 +44,7 @@ To setup locally the Super Linter follow [these instructions](https://github.com
 Run check on the local folder:
 
 ```bash
-docker run --rm -e RUN_LOCAL=true -e VALIDATE_JAVASCRIPT_STANDARD=false -e FILTER_REGEX_EXCLUDE=".*backend/hasura/schema/.*" -v `pwd`:/tmp/lint github/super-linter:v3.15.5
+docker run --rm -e RUN_LOCAL=true -e VALIDATE_JAVASCRIPT_STANDARD=false -e FILTER_REGEX_EXCLUDE=".*backend/hasura/schema/.*" -v `pwd`:/tmp/lint github/super-linter:v3.14.5
 ```
 
 ## Copyright

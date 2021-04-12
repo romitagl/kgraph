@@ -8,9 +8,13 @@
       <v-container class="py-0 fill-height">
         <v-avatar
           class="mr-10"
-          color="grey darken-1"
+          color="blue darken-1"
           size="32"
-        ></v-avatar>
+          width="120"
+          rounded="xl"
+        >
+        {{ selectedUser }}
+        </v-avatar>
 
         <v-btn
           v-for="link in links"
@@ -24,12 +28,36 @@
 
         <v-responsive max-width="260">
           <v-text-field
+            v-model="topicName"
+            placeholder="Type a topic name"
             dense
             flat
             hide-details
             rounded
             solo-inverted
           ></v-text-field>
+          <ApolloQuery
+            v-if="topicName != prevTopicName && selectedUser != ''"
+            :query="require('../graphql/SearchTopicsForUser.gql')"
+            :variables="{ topicsName: '%'+topicName+'%', username: selectedUser }"
+          >
+            <template slot-scope="{ result: { loading, error, data } }">
+              <!-- Loading -->
+              <div v-if="loading" class="loading apollo">Loading...</div>
+
+              <!-- Error -->
+              <div v-else-if="error" class="error apollo">{{ error }}</div>
+
+              <!-- Result -->
+              <div v-else-if="data != null" class="result apollo">
+                {{ prevTopicName = topicName }}
+                <!-- {{ data }} -->
+                {{ getTopics(data, topicName == '') }} {{ buildVisGraph() }}
+              </div>
+              <!-- No result -->
+              <div v-else class="no-result apollo">No result :(</div>
+            </template>
+        </ApolloQuery>
         </v-responsive>
       </v-container>
     </v-app-bar>
@@ -45,27 +73,79 @@
                 <v-list-item
                   link
                   color="grey lighten-4"
+                  inactive="true"
                 >
                   <v-list-item-content>
                     <v-list-item-title>
-                      Refresh
+                      TOPIC DETAILS
                     </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
 
-                <v-divider class="my-2"></v-divider>
+                <!-- <v-divider class="my-2"></v-divider> -->
 
-                <v-list-item
-                  v-for="n in 5"
-                  :key="n"
-                  link
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      List Item {{ n }}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+                <v-card width="510px" min-height="550px">
+                  <v-container>
+                    <v-row>
+                        <v-col cols="12">
+                          <v-text-field
+                            label="Topic Name"
+                            required
+                            v-model="addTopicName"
+                          ></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col align="left" cols="12">
+                          Parent Topic:
+                      <treeselect
+                          placeholder="None"
+                          v-model="addTopicParentID"
+                          :multiple="false"
+                          :open-on-click="true"
+                          :options="topicsList"
+                      />
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="12">
+                        <v-textarea
+                          label="Content"
+                          required
+                          v-model="addTopicContent"
+                        ></v-textarea>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                  <v-card-actions>
+                    <v-list color="transparent">
+                    <template v-if="selectedNodeID == ''">
+                      <v-list-item>
+                      <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
+                      </v-list-item>
+                    </template>
+                    <template v-if="selectedNodeID != ''">
+                      <v-list-item>
+                        <v-btn
+                          color="primary"
+                          text
+                          @click="onDeleteNode();"
+                        >Delete Node</v-btn>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-btn
+                          color="primary"
+                          text
+                          @click="onUpdateNode();"
+                        >Update Node</v-btn>
+                      </v-list-item>
+                      <v-list-item>
+                        <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode"></dialog-topic-component>
+                      </v-list-item>
+                    </template>
+                    </v-list>
+                  </v-card-actions>
+                </v-card>
               </v-list>
             </v-sheet>
           </v-col>
@@ -112,8 +192,8 @@
 
 <script>
 // https://github.com/riophae/vue-treeselect
-//import Treeselect from "@riophae/vue-treeselect";
-//import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import Treeselect from "@riophae/vue-treeselect";
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 // https://github.com/visjs/vis-network
 import { Network } from "vis-network/peer/esm/vis-network";
@@ -344,7 +424,7 @@ export default {
   },
   // register the component
   components: {
-    //Treeselect,
+    Treeselect,
     'dialog-topic-component': KGraphDialogAddTopic
     },
   methods: {

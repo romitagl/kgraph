@@ -137,7 +137,7 @@
         </v-col>
         <v-col cols="12" class="d-flex justify-center">
           <v-footer>
-            <div class="primary--text">© <a href="https://github.com/romitagl/kgraph" class="text-decoration-none">KGraph</a>, GNU GENERAL PUBLIC LICENSE.</div>
+            <div class="primary--text">© 2021 <a href="https://github.com/romitagl/kgraph" class="text-decoration-none">KGraph</a>, Apache License.</div>
           </v-footer>
         </v-col>
       </v-row>

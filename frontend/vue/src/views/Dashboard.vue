@@ -16,13 +16,9 @@
         {{ selectedUser }}
         </v-avatar>
 
-        <v-btn
-          v-for="link in links"
-          :key="link"
-          text
-        >
-          {{ link }}
-        </v-btn>
+        <!-- <v-btn text> Dashboard </v-btn> -->
+        <!-- <v-btn text> Profile </v-btn> -->
+        <v-btn text @click="onLogout();"> Logout </v-btn>
 
         <v-spacer></v-spacer>
 
@@ -347,10 +343,6 @@ function deleteListTopic(topicsList, id){
 export default {
   data () {
     return {
-      links: [
-        'Dashboard',
-        'Profile',
-      ],
       username: '',
       selectedUser: '',
       topicName: '',
@@ -443,9 +435,6 @@ export default {
       this.selectedNodeID = selectedNodeID;
       this.addTopicParentID = addTopicParentID;
     },
-    onTopicAdded: function (data) {
-      this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
-    },
     getTopics(data, rebuildTopicsList) {
       console.log("getTopics()");
       // console.log(data);
@@ -462,6 +451,14 @@ export default {
         buildTopicsList(topicsList, data.kgraph_topics);
         this.topicsList = topicsList;
       }
+    },
+    onLogout() {
+      this.selectedUser = ""
+      window.sessionStorage.clear();
+      this.$router.push( {path: '/' });
+    },
+    onTopicAdded: function (data) {
+      this.topicAddedResult = "onTopicAdded at: " + data.data.insert_kgraph_topics.returning[0].created_at
     },
     onTreeSelectNode(node, instanceId) {
       console.log("onTreeSelectNode node: ", node, " instanceId: ", instanceId);

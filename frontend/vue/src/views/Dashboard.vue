@@ -116,35 +116,39 @@
                       </v-col>
                     </v-row>
                   </v-container>
-                  <v-card-actions>
-                    <v-list color="transparent">
-                    <template v-if="selectedNodeID == ''">
-                      <v-list-item>
-                      <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
-                      </v-list-item>
-                    </template>
-                    <template v-if="selectedNodeID != ''">
-                      <v-list-item>
+                </v-card>
+                  <v-list color="transparent" >
+                  <template v-if="selectedNodeID == ''">
+                    <v-list-item>
+                      <v-row justify="center">
+                        <v-btn color="primary" text @click="onAddNode(false, addTopicName, addTopicContent);" >Add Topic</v-btn>
+                      </v-row>
+                    </v-list-item>
+                  </template>
+                  <template v-if="selectedNodeID != ''">
+                    <v-list-item>
+                      <v-row justify="center">
                         <v-btn
                           color="primary"
                           text
                           @click="onDeleteNode();"
                         >Delete Node</v-btn>
-                      </v-list-item>
-                      <v-list-item>
+                      </v-row>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-row justify="center">
                         <v-btn
                           color="primary"
                           text
                           @click="onUpdateNode();"
                         >Update Node</v-btn>
-                      </v-list-item>
-                      <v-list-item>
-                        <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode"></dialog-topic-component>
-                      </v-list-item>
-                    </template>
-                    </v-list>
-                  </v-card-actions>
-                </v-card>
+                      </v-row>
+                    </v-list-item>
+                    <v-list-item>
+                      <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :click-function="onAddNode"></dialog-topic-component>
+                    </v-list-item>
+                  </template>
+                  </v-list>
               </v-list>
             </v-sheet>
           </v-col>

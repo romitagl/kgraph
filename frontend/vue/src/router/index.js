@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../views/Login.vue'
-import KGraphAdmin from '../components/KGraphAdmin'
-import KGraphUser from '../components/KGraphUser'
+import KGraphAdmin from '../views/KGraphAdmin'
+import KGraphUser from '../views/KGraphUser'
+import Dashboard from '../views/Dashboard'
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
     path: '/kgraphuser',
     name: 'KGraphUser',
     component: KGraphUser
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard
   }
 ]
 

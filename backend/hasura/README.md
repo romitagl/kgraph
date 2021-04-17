@@ -6,7 +6,7 @@ This folder contains the Postgresql database and Graphql Engine files.
 
 All the services run in a **Docker** container and are orchestrated through [Docker Compose](https://docs.docker.com/compose/).
 
-**GNU make** and **jq** are also required for running the tests.
+**GNU make**, **jq**, **curl** and **nc** are also required for running the tests.
 
 ## Setup
 
@@ -71,7 +71,7 @@ bash ./utils/import-data-hasura.sh
 
 The Makefile implements all the targets required for an End-To-End testing in particular:
 
-1. Satisfy the dependencies (create the postgresql data folder)
+1. Satisfy the required dependencies
 2. Start the graphql-engine and postgresdb
 3. Install the SQL schema and the Hasura metadata
 4. Run all the tests available
@@ -136,9 +136,137 @@ pg_ctl stop
 pg_ctl start
 ```
 
-List Docker volumes:
+### Docker
+
+#### Volumes
+
+Docker page: <https://docs.docker.com/storage/volumes/>
 
 ```bash
 docker volume ls
 docker volume inspect ${volume_name}
 ```
+
+Volumes are useful for backups, restores, and migrations. Use the *--volumes-from* flag to create a new container that mounts that volume.
+
+**Backup a container volume**:
+
+- `docker run -v /dbdata --name dbstore ubuntu /bin/bash`: for example, create a new container named dbstore.
+- `docker run --rm --volumes-from dbstore -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /dbdata`: launch a new container and mount the volume from the dbstore container, mount a local host directory as /backup, pass a command that tars the contents of the dbdata volume to a backup.tar file inside our /backup directory.
+- when the command completes and the container stops, we are left with a backup of our dbdata volume.
+
+**Restore a container volume**:
+
+- `docker run -v /dbdata --name dbstore2 ubuntu /bin/bash`: for example, create a new container named dbstore2.
+- `docker run --rm --volumes-from dbstore2 -v $(pwd):/backup ubuntu bash -c "cd /dbdata && tar xvf /backup/backup.tar --strip 1"`: un-tar the backup file in the new container`s data volume.
+- the techniques above can be used to automate backup, migration and restore testing using your preferred tools.
+
+#### Logging
+
+Docker page: <https://docs.docker.com/config/containers/logging/configure/>
+
+#### Metrics
+
+Runtime options with Memory, CPUs, and GPUs: <https://docs.docker.com/config/containers/resource_constraints/>.
+
+Metrics pseudo-files are located in */sys/fs/cgroup* in the host OS. In some systems, they may be in */cgroup* instead.
+
+```bash
+# to get the container id use: docker ps
+docker stats <container_id>
+```
+
+##### CPU
+
+| Name | Description | Metric type |
+| :--- | :--- | --- |
+| user CPU | Percent of time that CPU is under direct control of processes | Resource: Utilization |
+| system CPU | Percent of time that CPU is executing system calls on behalf of processes | Resource: Utilization |
+| throttling (count) | Number of CPU throttling enforcements for a container | Resource: Saturation |
+| throttling (time)| Total time that a container's CPU usage was throttled| Resource: Saturation |
+
+```bash
+# /sys/fs/cgroup/cpuacct/docker/$CONTAINER_ID/
+# usage
+cat /sys/fs/cgroup/cpuacct/docker/$CONTAINER_ID/cpuacct.stat
+# usage per core
+cat /sys/fs/cgroup/cpuacct/docker/$CONTAINER_ID/cpuacct.usage_percpu
+# multiple CPU
+cat /sys/fs/cgroup/cpuacct/docker/$CONTAINER_ID/cpuacct.usage
+# throttled CPU
+cat /sys/fs/cgroup/cpu/docker/$CONTAINER_ID/cpu.stat
+```
+
+##### Memory
+
+| Name | Description | Metric type |
+| :--- | :--- | --- |
+| Memory | Memory usage of a container| Resource: Utilization |
+| RSS | Resident set size is data that belongs to a process (stacks, heaps, etc.) | Resource: Utilization |
+| Cache memory | Data from disk cached in memory | Resource: Utilization |
+| Swap | Amount of swap space in use | Resource: Saturation |
+
+```bash
+# memory
+cat /sys/fs/cgroup/memory/docker/$CONTAINER_ID/memory.stat
+# total memory used: cached + rss
+$ cat /sys/fs/cgroup/memory/docker/$CONTAINER_ID/memory.usage_in_bytes
+# total memory used + swap in use
+$ cat /sys/fs/cgroup/memory/docker/$CONTAINER_ID/memory.memsw.usage_in_bytes
+# number of times memory usage hit limts
+$ cat /sys/fs/cgroup/memory/docker/$CONTAINER_ID/memory.failcnt
+# memory limit of the cgroup in bytes
+$ cat /sys/fs/cgroup/memory/docker/$CONTAINER_ID/memory.limit_in_bytes
+```
+
+To set a 500MB limit, for example: `docker run -m 500M IMAGE [COMMAND] [ARG...]`
+
+##### I/O
+
+For each block device, Docker reports the following two metrics, decomposed into four counters: by reads versus writes, and by synchronous versus asynchronous I/O.
+
+| Name | Description | Metric type |
+| :--- | :--- | --- |
+| I/O serviced | Count of I/O operations performed, regardless of size | Resource: Utilization |
+| I/O service bytes | Bytes read or written by the cgroup | Resource: Utilization |
+
+The path to I/O stats pseudo-files for most operating systems is: */sys/fs/cgroup/blkio/docker/$CONTAINER_ID/*.
+
+Depending on your system, you may have many metrics available from these pseudo-files: blkio.io_queued_recursive, blkio.io_service_time_recursive, blkio.io_wait_time_recursive and more.
+
+On many systems, however, many of these pseudo-files only return zero values. In this case there are usually still two pseudo-files that work: blkio.throttle.io_service_bytes and blkio.throttle.io_serviced, which report total I/O bytes and operations, respectively. Contrary to their names, these numbers do not report throttled I/O but actual I/O bytes and ops.
+
+##### Network
+
+Just like an ordinary host, Docker can report several different network metrics, each of them divided into separate metrics for inbound and outbound network traffic:
+
+| Name | Description | Metric type |
+| :--- | :--- | --- |
+| Bytes | Network traffic volume (send/receive) | Resource: Utilization |
+| Packets | Network packet count (send/receive) | Resource: Utilization |
+| Errors (receive) | Packets received with errors | Resource: Error |
+| Errors (transmit) | Errors in packet transmission | Resource: Error |
+| Dropped | Packets dropped (send/receive) | Resource: Error |
+
+```bash
+CONTAINER_PID=`docker inspect -f '{{ .State.Pid }}' $CONTAINER_ID`
+cat /proc/$CONTAINER_PID/net/dev
+```
+
+##### GPU
+
+NVIDIA - CUDA: <https://github.com/NVIDIA/nvidia-docker/wiki/CUDA>.
+
+EXPOSE GPUS FOR USE
+Include the --gpus flag when you start a container to access GPU resources. Specify how many GPUs to use. For example: `docker run -it --rm --gpus all ubuntu nvidia-smi`.
+
+##### API
+
+Docker page: <https://docs.docker.com/engine/api/>
+
+Like the docker stats command, the API will continuously report a live stream of CPU, memory, I/O, and network metrics. The difference is that the API provides far more detail than the stats command.
+
+The daemon listens on *unix:///var/run/docker.sock* to allow only local connections by the root user.
+
+- List and manage containers: `curl --unix-socket /var/run/docker.sock http://localhost/v1.41/containers/json`
+- To collect all metrics in a continuously updated live stream of JSON: `curl --unix-socket /var/run/docker.sock http://localhost/v1.41/containers/$CONTAINER_ID/stats`

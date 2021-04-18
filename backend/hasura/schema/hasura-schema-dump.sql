@@ -49,6 +49,49 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: labels; Type: TABLE; Schema: kgraph; Owner: postgres
+--
+
+CREATE TABLE kgraph.labels (
+    id integer NOT NULL,
+    title text NOT NULL,
+    description text,
+    users_username text NOT NULL
+);
+
+
+ALTER TABLE kgraph.labels OWNER TO postgres;
+
+--
+-- Name: TABLE labels; Type: COMMENT; Schema: kgraph; Owner: postgres
+--
+
+COMMENT ON TABLE kgraph.labels IS 'user labels';
+
+
+--
+-- Name: labels_id_seq; Type: SEQUENCE; Schema: kgraph; Owner: postgres
+--
+
+CREATE SEQUENCE kgraph.labels_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE kgraph.labels_id_seq OWNER TO postgres;
+
+--
+-- Name: labels_id_seq; Type: SEQUENCE OWNED BY; Schema: kgraph; Owner: postgres
+--
+
+ALTER SEQUENCE kgraph.labels_id_seq OWNED BY kgraph.labels.id;
+
+
+--
 -- Name: roles; Type: TABLE; Schema: kgraph; Owner: postgres
 --
 
@@ -78,7 +121,6 @@ CREATE TABLE kgraph.topics (
     parent_id uuid,
     name text NOT NULL,
     content text,
-    tags text,
     public boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
@@ -92,6 +134,47 @@ ALTER TABLE kgraph.topics OWNER TO postgres;
 --
 
 COMMENT ON TABLE kgraph.topics IS 'topics table';
+
+
+--
+-- Name: topics_labels; Type: TABLE; Schema: kgraph; Owner: postgres
+--
+
+CREATE TABLE kgraph.topics_labels (
+    labels_id integer NOT NULL,
+    topics_id uuid NOT NULL,
+    id bigint NOT NULL
+);
+
+
+ALTER TABLE kgraph.topics_labels OWNER TO postgres;
+
+--
+-- Name: TABLE topics_labels; Type: COMMENT; Schema: kgraph; Owner: postgres
+--
+
+COMMENT ON TABLE kgraph.topics_labels IS 'labels set for each topic';
+
+
+--
+-- Name: topics_labels_id_seq; Type: SEQUENCE; Schema: kgraph; Owner: postgres
+--
+
+CREATE SEQUENCE kgraph.topics_labels_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE kgraph.topics_labels_id_seq OWNER TO postgres;
+
+--
+-- Name: topics_labels_id_seq; Type: SEQUENCE OWNED BY; Schema: kgraph; Owner: postgres
+--
+
+ALTER SEQUENCE kgraph.topics_labels_id_seq OWNED BY kgraph.topics_labels.id;
 
 
 --
@@ -121,6 +204,36 @@ COMMENT ON TABLE kgraph.users IS 'users table';
 
 
 --
+-- Name: labels id; Type: DEFAULT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.labels ALTER COLUMN id SET DEFAULT nextval('kgraph.labels_id_seq'::regclass);
+
+
+--
+-- Name: topics_labels id; Type: DEFAULT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels ALTER COLUMN id SET DEFAULT nextval('kgraph.topics_labels_id_seq'::regclass);
+
+
+--
+-- Name: labels labels_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.labels
+    ADD CONSTRAINT labels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: labels labels_users_username_title_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.labels
+    ADD CONSTRAINT labels_users_username_title_key UNIQUE (users_username, title);
+
+
+--
 -- Name: roles roles_name_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
@@ -137,6 +250,22 @@ ALTER TABLE ONLY kgraph.roles
 
 
 --
+-- Name: topics_labels topics_labels_labels_id_topics_id_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels
+    ADD CONSTRAINT topics_labels_labels_id_topics_id_key UNIQUE (labels_id, topics_id);
+
+
+--
+-- Name: topics_labels topics_labels_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels
+    ADD CONSTRAINT topics_labels_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: topics topics_name_users_username_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
@@ -149,7 +278,7 @@ ALTER TABLE ONLY kgraph.topics
 --
 
 ALTER TABLE ONLY kgraph.topics
-    ADD CONSTRAINT topics_pkey PRIMARY KEY (id, users_username);
+    ADD CONSTRAINT topics_pkey PRIMARY KEY (id);
 
 
 --
@@ -202,6 +331,30 @@ CREATE TRIGGER set_kgraph_users_updated_at BEFORE UPDATE ON kgraph.users FOR EAC
 --
 
 COMMENT ON TRIGGER set_kgraph_users_updated_at ON kgraph.users IS 'trigger to set value of column "updated_at" to current timestamp on row update';
+
+
+--
+-- Name: labels labels_users_username_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.labels
+    ADD CONSTRAINT labels_users_username_fkey FOREIGN KEY (users_username) REFERENCES kgraph.users(username) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: topics_labels topics_labels_labels_id_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels
+    ADD CONSTRAINT topics_labels_labels_id_fkey FOREIGN KEY (labels_id) REFERENCES kgraph.labels(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: topics_labels topics_labels_topics_id_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels
+    ADD CONSTRAINT topics_labels_topics_id_fkey FOREIGN KEY (topics_id) REFERENCES kgraph.topics(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

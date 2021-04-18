@@ -5,6 +5,7 @@ if [[ ! $HASURA_CURL_POST_COMMAND || ! "$HASURA_GRAPHQL_ENDPOINT" ]]; then print
 while [[ $( curl -o /dev/null -L -I -w "%{http_code}" "$HASURA_GRAPHQL_ENDPOINT" ) != 404 ]] ; do echo "waiting for Hasura GraphQL endpoint to be ready - retrying in 10 seconds..."; sleep 10; done
 
 kg_test_topicname=${TOPICNAME:-"test topic"}
+kg_test_labelname=${LABELNAME:-"label1"}
 
 function test_add_topic () {
 
@@ -15,10 +16,10 @@ function test_add_topic () {
 
   local -r kg_test_username=$1
 
-  # 0. cleanup the users table
+  # cleanup the users table
   $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { delete_kgraph_users(where: {username: {_eq: \\\"$kg_test_username\\\"}}) { affected_rows }}\" }" "$HASURA_GRAPHQL_ENDPOINT"
 
-  # 1. create an entry in the users table
+  # create an entry in the users table
   # INSERT_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_users(objects: {username: \\\"$kg_test_username\\\", display_name: \\\"$kg_test_username\\\"}) { returning { created_at } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
   # printf "created user: %s at: %s\n" "$kg_test_username" "$INSERT_RET_VAL"
   INSERT_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { Signup(signupParams: {username: \\\"$kg_test_username\\\", password: \\\"$kg_test_username\\\"}) { username } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
@@ -31,18 +32,35 @@ function test_add_topic () {
     exit 1;
   fi
 
-  # 2. add a topic
+  # add a topic
   TOPIC_ID_RESULT=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_topics(objects: {users_username: \\\"$kg_test_username\\\", name: \\\"$kg_test_topicname\\\"}) { returning { id } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
   printf "added topic: %s with id: %s\n" "$kg_test_topicname" "$TOPIC_ID_RESULT"
 
-  # 3. get the topic by ID
+  # get the topic by ID
   TOPIC_ID=$( echo "$TOPIC_ID_RESULT" | jq .data.insert_kgraph_topics.returning[0].id | tr -d '"' )
   TOPICNAME_RESULT=$( $HASURA_CURL_POST_COMMAND "{\"query\": \"query { kgraph_topics(where: {id: {_eq: \\\"$TOPIC_ID\\\" }}) { name }}\" }" "$HASURA_GRAPHQL_ENDPOINT" )
   printf "get topic: %s with id: %s\n" "$TOPICNAME_RESULT" "$TOPIC_ID"
 
   TOPICNAME_NAME=$( echo "$TOPICNAME_RESULT" | jq .data.kgraph_topics[0].name | tr -d '"' )
-  # 4. verify that TOPICNAME matches TOPICNAME_NAME
+  # verify that TOPICNAME matches TOPICNAME_NAME
   if [[ "$kg_test_topicname" != "$TOPICNAME_NAME" ]]; then
+    exit 1;
+  fi
+
+  # add label for user
+  LABEL_ID_RESULT=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_labels(objects: {users_username: \\\"$kg_test_username\\\", title: \\\"$kg_test_labelname\\\"}) { returning { id } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
+  printf "added label: %s with id: %s\n" "$kg_test_labelname" "$LABEL_ID_RESULT"
+
+  # get the label ID
+  LABEL_ID=$( echo "$LABEL_ID_RESULT" | jq .data.insert_kgraph_labels.returning[0].id | tr -d '"' )
+
+  # add the topic - label relation
+  LABEL_TOPIC_ID_RESULT=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { insert_kgraph_topics_labels(objects: {labels_id: \\\"$LABEL_ID\\\", topics_id: \\\"$TOPIC_ID\\\"}) { returning { id } } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
+  printf "added topic %s - label %s relation with id: %s\n" "$TOPIC_ID" "$LABEL_ID" "$LABEL_TOPIC_ID_RESULT"
+
+  LABEL_TOPIC_ID=$( echo "$LABEL_TOPIC_ID_RESULT" | jq .data.insert_kgraph_topics_labels.returning[0].id | tr -d '"' )
+  if [[ "$LABEL_TOPIC_ID" -lt 1 ]]; then
+    printf "error: label - topic relation id [%s] not matching expected value!" "$LABEL_TOPIC_ID"
     exit 1;
   fi
 }

@@ -96,9 +96,11 @@ ALTER SEQUENCE kgraph.labels_id_seq OWNED BY kgraph.labels.id;
 --
 
 CREATE TABLE kgraph.roles (
+    id integer NOT NULL,
     name text NOT NULL,
     description text,
-    "default" boolean DEFAULT false NOT NULL
+    "default" boolean DEFAULT false NOT NULL,
+    admin boolean DEFAULT false NOT NULL
 );
 
 
@@ -109,6 +111,28 @@ ALTER TABLE kgraph.roles OWNER TO postgres;
 --
 
 COMMENT ON TABLE kgraph.roles IS 'users roles';
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: kgraph; Owner: postgres
+--
+
+CREATE SEQUENCE kgraph.roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE kgraph.roles_id_seq OWNER TO postgres;
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: kgraph; Owner: postgres
+--
+
+ALTER SEQUENCE kgraph.roles_id_seq OWNED BY kgraph.roles.id;
 
 
 --
@@ -183,7 +207,6 @@ ALTER SEQUENCE kgraph.topics_labels_id_seq OWNED BY kgraph.topics_labels.id;
 
 CREATE TABLE kgraph.users (
     username text NOT NULL,
-    roles_name text NOT NULL,
     display_name text,
     email character varying,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -204,6 +227,48 @@ COMMENT ON TABLE kgraph.users IS 'users table';
 
 
 --
+-- Name: users_roles; Type: TABLE; Schema: kgraph; Owner: postgres
+--
+
+CREATE TABLE kgraph.users_roles (
+    id integer NOT NULL,
+    users_username text NOT NULL,
+    roles_id integer NOT NULL
+);
+
+
+ALTER TABLE kgraph.users_roles OWNER TO postgres;
+
+--
+-- Name: TABLE users_roles; Type: COMMENT; Schema: kgraph; Owner: postgres
+--
+
+COMMENT ON TABLE kgraph.users_roles IS 'roles assigned to users';
+
+
+--
+-- Name: users_roles_id_seq; Type: SEQUENCE; Schema: kgraph; Owner: postgres
+--
+
+CREATE SEQUENCE kgraph.users_roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE kgraph.users_roles_id_seq OWNER TO postgres;
+
+--
+-- Name: users_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: kgraph; Owner: postgres
+--
+
+ALTER SEQUENCE kgraph.users_roles_id_seq OWNED BY kgraph.users_roles.id;
+
+
+--
 -- Name: labels id; Type: DEFAULT; Schema: kgraph; Owner: postgres
 --
 
@@ -211,10 +276,24 @@ ALTER TABLE ONLY kgraph.labels ALTER COLUMN id SET DEFAULT nextval('kgraph.label
 
 
 --
+-- Name: roles id; Type: DEFAULT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.roles ALTER COLUMN id SET DEFAULT nextval('kgraph.roles_id_seq'::regclass);
+
+
+--
 -- Name: topics_labels id; Type: DEFAULT; Schema: kgraph; Owner: postgres
 --
 
 ALTER TABLE ONLY kgraph.topics_labels ALTER COLUMN id SET DEFAULT nextval('kgraph.topics_labels_id_seq'::regclass);
+
+
+--
+-- Name: users_roles id; Type: DEFAULT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users_roles ALTER COLUMN id SET DEFAULT nextval('kgraph.users_roles_id_seq'::regclass);
 
 
 --
@@ -234,6 +313,14 @@ ALTER TABLE ONLY kgraph.labels
 
 
 --
+-- Name: roles roles_id_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.roles
+    ADD CONSTRAINT roles_id_key UNIQUE (id);
+
+
+--
 -- Name: roles roles_name_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
@@ -246,7 +333,7 @@ ALTER TABLE ONLY kgraph.roles
 --
 
 ALTER TABLE ONLY kgraph.roles
-    ADD CONSTRAINT roles_pkey PRIMARY KEY (name);
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
 
 
 --
@@ -295,6 +382,22 @@ ALTER TABLE ONLY kgraph.users
 
 ALTER TABLE ONLY kgraph.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (username);
+
+
+--
+-- Name: users_roles users_roles_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users_roles
+    ADD CONSTRAINT users_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users_roles users_roles_users_username_roles_id_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.users_roles
+    ADD CONSTRAINT users_roles_users_username_roles_id_key UNIQUE (users_username, roles_id);
 
 
 --
@@ -366,19 +469,19 @@ ALTER TABLE ONLY kgraph.topics
 
 
 --
--- Name: users users_roles_name_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+-- Name: users_roles users_roles_roles_id_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
-ALTER TABLE ONLY kgraph.users
-    ADD CONSTRAINT users_roles_name_fkey FOREIGN KEY (roles_name) REFERENCES kgraph.roles(name) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY kgraph.users_roles
+    ADD CONSTRAINT users_roles_roles_id_fkey FOREIGN KEY (roles_id) REFERENCES kgraph.roles(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: users users_roles_name_fkey2; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
+-- Name: users_roles users_roles_users_username_fkey; Type: FK CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
-ALTER TABLE ONLY kgraph.users
-    ADD CONSTRAINT users_roles_name_fkey2 FOREIGN KEY (roles_name) REFERENCES kgraph.roles(name) ON UPDATE CASCADE ON DELETE RESTRICT;
+ALTER TABLE ONLY kgraph.users_roles
+    ADD CONSTRAINT users_roles_users_username_fkey FOREIGN KEY (users_username) REFERENCES kgraph.users(username) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

@@ -5,6 +5,5 @@ query searchTopicsForUser ($topicsName: String! $username: String!) {
     name
     content
     parent_id
-    tags
   }
 }

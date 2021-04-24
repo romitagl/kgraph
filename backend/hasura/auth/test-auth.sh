@@ -14,8 +14,8 @@ create_users(){
 login_users(){
   echo "Authenticating User " "$USER"
   LOGIN_RET_VAL=$( $HASURA_CURL_POST_COMMAND "{ \"query\": \"mutation { Login(loginParams: {username: \\\"${USER}\\\", password: \\\"${USER}\\\"}) { token } }\" }" "$HASURA_GRAPHQL_ENDPOINT" )
-  RETURNED_TOKEN=$( echo "$LOGIN_RET_VAL" | jq .data.Login.token )
-  if [[ ! $RETURNED_TOKEN ]]; then
+  RETURNED_ERROR=$( echo "$LOGIN_RET_VAL" | jq .errors )
+  if [[ $RETURNED_ERROR ]]; then
     exit 1;
   fi
 }

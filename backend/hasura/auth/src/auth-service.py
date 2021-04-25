@@ -94,9 +94,7 @@ class GraphQLClient:
             {"username": username},
         )
         if response is None:
-            logging.error(
-                f"find_user_by_username - error: {error}"
-            )
+            logging.error(f"find_user_by_username - error: {error}")
             return None
         password = response.get("kgraph_users")[0].get("password_hash")
         role_id = response.get("kgraph_users_roles")[0].get("roles_id")
@@ -111,9 +109,7 @@ class GraphQLClient:
             {"role_id": role_id},
         )
         if response is None:
-            logging.error(
-                f"find_user_by_username - error: {error}"
-            )
+            logging.error(f"find_user_by_username - error: {error}")
             return None
         role_name = response.get("kgraph_roles")[0].get("name")
         return {"username": username, "password": password, "role_name": role_name}

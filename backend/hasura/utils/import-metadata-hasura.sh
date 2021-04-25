@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
 if [ $# != 1 ]; then
   printf "error: missing Hasura metadata input file. E.g.: bash ./utils/import-metadata-hasura.sh ./schema/hasura-metadata-dump.json"
   exit 1

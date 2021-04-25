@@ -127,8 +127,8 @@
                         <v-btn
                           color="primary"
                           text
-                          @click="onDeleteNode();"
-                        >Delete Node</v-btn>
+                          @click="onUpdateNode();"
+                        >Update Node</v-btn>
                       </v-row>
                     </v-list-item>
                     <v-list-item>
@@ -136,8 +136,8 @@
                         <v-btn
                           color="primary"
                           text
-                          @click="onUpdateNode();"
-                        >Update Node</v-btn>
+                          @click="onDeleteNode();"
+                        >Delete Node</v-btn>
                       </v-row>
                     </v-list-item>
                     <v-list-item>

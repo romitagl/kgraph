@@ -1,6 +1,6 @@
 include ../../common/common.mk
 
-CI_ENV := export HASURA_CURL_POST_COMMAND="curl -v -H X-Hasura-Admin-Secret:$$HASURA_GRAPHQL_ADMIN_SECRET -d" && \
+CI_ENV := export HASURA_CURL_POST_COMMAND="curl -H X-Hasura-Admin-Secret:$$HASURA_GRAPHQL_ADMIN_SECRET --data " && \
 	  export HASURA_GRAPHQL_ENDPOINT="http://127.0.0.1:8080/v1/graphql"
 
 .PHONY: ci

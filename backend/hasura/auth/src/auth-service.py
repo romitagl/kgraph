@@ -67,7 +67,7 @@ class GraphQLClient:
             """
           query GetDefaultRole {
                 kgraph_roles(where: {default: {_eq: true}}, limit: 1) {
-                    name
+                    id
               }
           }
           """,
@@ -76,37 +76,59 @@ class GraphQLClient:
         # {'data': {'kgraph_roles': [{'name': 'registred_user'}]}}
         if response is None:
             return None
-        return response.get("kgraph_roles")[0].get("name")
+        return response.get("kgraph_roles")[0].get("id")
 
     def find_user_by_username(self, username: str):
         response, error = self.graphql_http_request(
             """
-            query UserByUsername($username: String!) {
+            query FindUser($username: String!) {
                 kgraph_users(where: {username: {_eq: $username}}, limit: 1) {
                     username
                     password_hash
-                    roles_name
+                }
+                kgraph_users_roles(where: {users_username: {_eq: $username}}) {
+                    roles_id
                 }
             }
         """,
             {"username": username},
         )
         if response is None:
+            logging.error(f"find_user_by_username - error: {error}")
             return None
         password = response.get("kgraph_users")[0].get("password_hash")
-        role = response.get("kgraph_users")[0].get("roles_name")
-        return {"username": username, "password": password, "role": role}
-
-    def create_user(self, username: str, password: str, roles_name: str):
+        role_id = response.get("kgraph_users_roles")[0].get("roles_id")
         response, error = self.graphql_http_request(
             """
-            mutation CreateUser($username: String!, $password: String!, $roles_name: String!) {
-                insert_kgraph_users_one(object: {username: $username, password_hash: $password, roles_name: $roles_name}) {
-                    username
+            query FindRole($role_id: Int!) {
+                kgraph_roles(where: {id: {_eq: $role_id}}) {
+                    name
                 }
             }
         """,
-            {"username": username, "password": password, "roles_name": roles_name},
+            {"role_id": role_id},
+        )
+        if response is None:
+            logging.error(f"find_user_by_username - error: {error}")
+            return None
+        role_name = response.get("kgraph_roles")[0].get("name")
+        return {"username": username, "password": password, "role_name": role_name}
+
+    def create_user(self, username: str, password: str, roles_id: int):
+        response, error = self.graphql_http_request(
+            """
+            mutation CreateUser($username: String!, $password: String!, $roles_id: Int!) {
+            insert_kgraph_users_one(object: {username: $username, password_hash: $password}) {
+                username
+            }
+            insert_kgraph_users_roles(objects: {roles_id: $roles_id, users_username: $username}) {
+                returning {
+                id
+                }
+            }
+            }
+        """,
+            {"username": username, "password": password, "roles_id": roles_id},
         )
         # {'data': {'insert_kgraph_users_one': {'username': 'test'}}}
         if response is None:
@@ -150,8 +172,8 @@ def generate_token(user) -> str:
     """
     payload = {
         "https://hasura.io/jwt/claims": {
-            "x-hasura-allowed-roles": [user["role"]],
-            "x-hasura-default-role": user["role"],
+            "x-hasura-allowed-roles": [user["role_name"]],
+            "x-hasura-default-role": user["role_name"],
             "X-Hasura-User-Id": user["username"],
         }
     }
@@ -191,12 +213,12 @@ def signup_handler():
         user_password = args.get("password")
         hash_pwd = hash_password(user_password)
 
-        roles_name = client.get_default_role()
-        if roles_name is None:
+        roles_id = client.get_default_role()
+        if roles_id is None:
             return {"message": "default role not found"}, 400
         else:
             username, error = client.create_user(
-                args.get("username"), hash_pwd, roles_name
+                args.get("username"), hash_pwd, roles_id
             )
             if username is None:
                 return {"message": f"failed creating user - {error}"}, 400

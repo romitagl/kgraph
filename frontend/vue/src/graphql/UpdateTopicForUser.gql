@@ -1,7 +1,10 @@
-mutation updateTopicForUser($username: String!, $id: uuid, $content: String, $topicName: String!, $parent_id: uuid) {
+mutation updateTopicForUser($username: String!, $id: uuid, $content: String, $topicName: String!, $parent_id: uuid, $topicLabel: String) {
   update_kgraph_topics(where: {users_username: {_eq: $username}, id: {_eq: $id}}, _set: {content: $content, name: $topicName, parent_id: $parent_id}) {
     returning {
       updated_at
     }
+  }
+  insert_kgraph_labels(objects: {title: $topicLabel, topics_labels: {data: {topics_id: $id}, on_conflict: {constraint: topics_labels_topics_id_key, update_columns: labels_id}}}, on_conflict: {constraint: labels_users_username_title_key, update_columns: updated_at}) {
+    affected_rows
   }
 }

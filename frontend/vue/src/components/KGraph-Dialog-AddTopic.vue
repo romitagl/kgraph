@@ -6,11 +6,13 @@ export default {
       dialog: false,
       addTopicName: '',
       addTopicContent: '',
+      addTopicLabel: '',
     }
   },
   // https://vuejs.org/v2/guide/components.html#Passing-Data-to-Child-Components-with-Props
   props: {
     addChild: Boolean,
+    labelsList: Array,
     clickFunction : {
       type: Function,
       required: true
@@ -26,7 +28,7 @@ export default {
       v-if="addChild == true"
       color="primary"
       text
-      @click.stop="dialog = true; addTopicName = ''; addTopicContent = ''"
+      @click.stop="dialog = true; addTopicName = ''; addTopicContent = '', addTopicLabel = ''"
     >
       Add Child
     </v-btn>
@@ -34,7 +36,7 @@ export default {
       v-if="addChild == false"
       color="primary"
       text
-      @click.stop="dialog = true; addTopicName = ''; addTopicContent = ''"
+      @click.stop="dialog = true; addTopicName = ''; addTopicContent = '', addTopicLabel = ''"
     >
       Add Topic
     </v-btn>
@@ -57,6 +59,20 @@ export default {
                 v-model="addTopicName"
               ></v-text-field>
             </v-col>
+            </v-row>
+            <v-row>
+              <v-col align="left" cols="12">
+                <v-combobox
+                  v-model="addTopicLabel"
+                  :items="labelsList"
+                  label="Label name"
+                  full-width
+                  hide-details
+                  hide-no-data
+                  hide-selected
+                  single-line
+                ></v-combobox>
+              </v-col>
             </v-row>
             <v-row>
             <v-col cols="12">
@@ -83,7 +99,7 @@ export default {
           <v-btn
             color="primary"
             text
-            @click="clickFunction(addChild, addTopicName, addTopicContent); dialog = false"
+            @click="clickFunction(addChild, addTopicName, addTopicContent, addTopicLabel); dialog = false"
           >
             Add
           </v-btn>

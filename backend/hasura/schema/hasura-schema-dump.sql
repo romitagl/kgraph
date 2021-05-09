@@ -56,7 +56,8 @@ CREATE TABLE kgraph.labels (
     id integer NOT NULL,
     title text NOT NULL,
     description text,
-    users_username text NOT NULL
+    users_username text NOT NULL,
+    updated_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -337,19 +338,19 @@ ALTER TABLE ONLY kgraph.roles
 
 
 --
--- Name: topics_labels topics_labels_labels_id_topics_id_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
---
-
-ALTER TABLE ONLY kgraph.topics_labels
-    ADD CONSTRAINT topics_labels_labels_id_topics_id_key UNIQUE (labels_id, topics_id);
-
-
---
 -- Name: topics_labels topics_labels_pkey; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
 --
 
 ALTER TABLE ONLY kgraph.topics_labels
     ADD CONSTRAINT topics_labels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: topics_labels topics_labels_topics_id_key; Type: CONSTRAINT; Schema: kgraph; Owner: postgres
+--
+
+ALTER TABLE ONLY kgraph.topics_labels
+    ADD CONSTRAINT topics_labels_topics_id_key UNIQUE (topics_id);
 
 
 --
@@ -406,6 +407,20 @@ ALTER TABLE ONLY kgraph.users_roles
 
 ALTER TABLE ONLY kgraph.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- Name: labels set_kgraph_labels_updated_at; Type: TRIGGER; Schema: kgraph; Owner: postgres
+--
+
+CREATE TRIGGER set_kgraph_labels_updated_at BEFORE UPDATE ON kgraph.labels FOR EACH ROW EXECUTE FUNCTION kgraph.set_current_timestamp_updated_at();
+
+
+--
+-- Name: TRIGGER set_kgraph_labels_updated_at ON labels; Type: COMMENT; Schema: kgraph; Owner: postgres
+--
+
+COMMENT ON TRIGGER set_kgraph_labels_updated_at ON kgraph.labels IS 'trigger to set value of column "updated_at" to current timestamp on row update';
 
 
 --

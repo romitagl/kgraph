@@ -1,7 +1,8 @@
 mutation addTopicForUser($topicsName: String!, $parent_id: uuid, $content: String) {
   insert_kgraph_topics(objects: {name: $topicsName, parent_id: $parent_id, content: $content}) {
     returning {
-      created_at id
+      created_at
+      id
     }
   }
 }

@@ -4,7 +4,7 @@ mutation updateTopicForUser($username: String!, $id: uuid, $content: String, $to
       updated_at
     }
   }
-  insert_kgraph_labels(objects: {title: $topicLabel, topics_labels: {data: {topics_id: $id}, on_conflict: {constraint: topics_labels_topics_id_key, update_columns: labels_id}}}, on_conflict: {constraint: labels_users_username_title_key, update_columns: updated_at}) {
+  insert_kgraph_labels(objects: {title: $topicLabel, topics_labels: {data: {topics_id: $id}, on_conflict: {constraint: topics_labels_topics_id_key, update_columns: labels_id}}}, on_conflict: {constraint: labels_users_username_title_key, update_columns: title}) {
     affected_rows
   }
 }

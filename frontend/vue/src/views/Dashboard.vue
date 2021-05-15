@@ -97,10 +97,9 @@
                           :items="labelsList"
                           label="Label name"
                           full-width
-                          hide-details
-                          hide-no-data
-                          hide-selected
                           single-line
+                          small-chips
+                          return-object
                         ></v-combobox>
                       </v-col>
                     </v-row>
@@ -264,7 +263,7 @@ function buildTopicsTree(topicsTree, topicsRelations, kgraph_topics) {
   }
 }
 
-function updateTopicsTree(topicsTree, topicsRelations, id, name, content, parent_id){
+function updateTopicsTree(topicsTree, topicsRelations, id, name, content, parent_id, topicLabel){
   // update element for the list
   for (let position = 0; position < topicsTree.length; position++) {
     if ( topicsTree[position].id == id) {
@@ -272,6 +271,7 @@ function updateTopicsTree(topicsTree, topicsRelations, id, name, content, parent
       topicsTree[position].label = buildTopicLabel(name, content);
       topicsTree[position].title = content;
       topicsTree[position].parent_id = parent_id;
+      topicsTree[position].group = topicLabel;
       break;
     }
   }
@@ -366,6 +366,14 @@ function addListTopic(topicsList, id, name) {
     label: name
   }
   topicsList.push(element);
+}
+
+function addListLabels(labelsList, topicLabel) {
+  // check if label is set and not already present in the list
+  if(topicLabel != "" && labelsList.indexOf(topicLabel)) {
+    console.log("labelsList.push: ", topicLabel)
+    labelsList.push(topicLabel);
+  }
 }
 
 function deleteListTopic(topicsList, id){
@@ -534,6 +542,7 @@ export default {
         alert("Fill in all the required fields!");
         return;
       }
+      console.log("onUpdateNode - addTopicLabel:", this.addTopicLabel);
 
       try {
         await this.$apollo.mutate({
@@ -606,15 +615,26 @@ export default {
 
       var result = null;
       try {
-        result = await this.$apollo.mutate({
-          mutation: require('../graphql/AddTopicForUser.gql'),
-          variables: {
-            topicsName: this.addTopicName,
-            content: this.addTopicContent,
-            parent_id: (child ? this.selectedNodeID : null),
-            topicLabel: this.addTopicLabel
-          }
-        })
+        if(this.addTopicLabel == "") {
+          result = await this.$apollo.mutate({
+            mutation: require('../graphql/AddTopicForUser.gql'),
+            variables: {
+              topicsName: this.addTopicName,
+              content: this.addTopicContent,
+              parent_id: (child ? this.selectedNodeID : null)
+            }
+          })
+        } else {
+          result = await this.$apollo.mutate({
+            mutation: require('../graphql/AddTopicLabelForUser.gql'),
+            variables: {
+              topicsName: this.addTopicName,
+              content: this.addTopicContent,
+              parent_id: (child ? this.selectedNodeID : null),
+              topicLabel: this.addTopicLabel
+            }
+          })
+        }
       }
       catch (error) {
         console.error(error.message);
@@ -630,6 +650,7 @@ export default {
       // add new topic to the list
       addTreeTopic(this.topics, this.topicsRelations, this.topicAddedResult, this.addTopicName, this.addTopicContent, (child ? this.selectedNodeID : null), this.addTopicLabel);
       addListTopic(this.topicsList, this.topicAddedResult, this.addTopicName);
+      addListLabels(this.labelsList, this.addTopicLabel);
 
       // reset fields
       this.resetTopicFields();

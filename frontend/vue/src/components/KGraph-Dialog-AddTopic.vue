@@ -67,10 +67,9 @@ export default {
                   :items="labelsList"
                   label="Label name"
                   full-width
-                  hide-details
-                  hide-no-data
-                  hide-selected
                   single-line
+                  small-chips
+                  return-object
                 ></v-combobox>
               </v-col>
             </v-row>

@@ -154,7 +154,7 @@
                       </v-row>
                     </v-list-item>
                     <v-list-item>
-                      <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :labelsList="labelsList" :click-function="onAddNode"></dialog-topic-component>
+                      <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :topicLabel="addTopicLabel" :labelsList="labelsList" :click-function="onAddNode"></dialog-topic-component>
                     </v-list-item>
                   </template>
                   </v-list>
@@ -180,7 +180,7 @@
 
                 <v-list v-show="btnAddTopic">
                   <v-list-item>
-                    <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :labelsList="labelsList" :click-function="onAddNode" v-show="btnAddTopic" @click="btnAddTopic = false"></dialog-topic-component>
+                    <dialog-topic-component v-bind:addChild="selectedNodeID != ''" :topicLabel="addTopicLabel" :labelsList="labelsList" :click-function="onAddNode" v-show="btnAddTopic" @click="btnAddTopic = false"></dialog-topic-component>
                   </v-list-item>
                   <template v-if="selectedNodeID != ''">
                     <v-list-item v-show="btnAddTopic">

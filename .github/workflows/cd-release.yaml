@@ -1,0 +1,41 @@
+name: CD Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v2
+        with:
+          # The branch, tag or SHA to checkout. When checking out the repository that
+          # triggered a workflow, this defaults to the reference or SHA for that event.
+          # Otherwise, uses the default branch.
+          ref: 'release'
+
+      - name: Npm Install
+        shell: bash
+        run: |
+          npm install
+
+      - name: Build dist
+        shell: bash
+        run: |
+          # compiles and minifies for production
+          # TODO => set npm run build --mode $TARGET_ENV
+          # https://cli.vuejs.org/guide/mode-and-env.html#modes
+          npm run build
+
+      # https://cli.vuejs.org/guide/deployment.html#github-pages
+      - name: Build Docker images and Publish to the registry
+        shell: bash
+        run: |
+          docker login docker.pkg.github.com -u publisher -p "${{ secrets.GITHUB_TOKEN }}"
+          make publish_docker_images
+

@@ -1,0 +1,4 @@
+# Setting up the .dockerignore file prevents node_modules and any intermediate build artifacts from being copied to the image which can cause issues during building
+.git
+**/node_modules
+**/dist

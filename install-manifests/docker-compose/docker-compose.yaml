@@ -1,10 +1,16 @@
-version: '3.6'
+version: '3.8'
 services:
   postgres:
     image: postgres:12
     restart: always
     environment:
       POSTGRES_PASSWORD: postgrespassword
+    # needed because the postgres container does not provide a healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
     - postgres_data:/var/lib/postgresql/data
     - ./schema:/shared/schema
@@ -13,26 +19,36 @@ services:
     ports:
     - "3000:3000"
     restart: always
+    # shared secrets
+    env_file: ./env.local
     environment:
       HASURA_GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
-      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
-      HASURA_GRAPHQL_JWT_SECRET_KEY: ${HASURA_GRAPHQL_JWT_SECRET_KEY}
-      HASURA_GRAPHQL_JWT_SECRET_TYPE: ${HASURA_GRAPHQL_JWT_SECRET_TYPE}
   graphql-engine:
     image: hasura/graphql-engine:v1.3.3
     ports:
     - "8080:8080"
     depends_on:
-    - "postgres"
-    - "auth-service"
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     restart: always
+    # shared secrets
+    env_file: ./env.local
     environment:
       HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
-      HASURA_GRAPHQL_ENABLE_CONSOLE: ${HASURA_GRAPHQL_ENABLE_CONSOLE} # set to "true" to enable console
-      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
-      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       HASURA_GRAPHQL_ENABLE_TELEMETRY: "false"
+  hasura-migrate:
+    image: docker.pkg.github.com/romitagl/kgraph/backend-hasura-schema:${KGRAPH_VERSION}
+    depends_on:
+      - "graphql-engine"
+    restart: "no"
+    env_file: ./hasura/env
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+    command: metadata apply --endpoint "http://graphql-engine:${HASURA_INTERNAL_PORT}" --admin-secret ${HASURA_GRAPHQL_ADMIN_SECRET} --project migrations
   frontend:
     image: docker.pkg.github.com/romitagl/kgraph/frontend-vue:${KGRAPH_VERSION}
     ports:

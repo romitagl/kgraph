@@ -1,4 +1,4 @@
-# Local KGraph on Docker
+# Local KGraph setup on Docker
 
 This Docker Compose setup runs [Hasura GraphQL Engine](https://github.com/hasura/graphql-engine) along with Postgresql, the authentication service and the Frontend using `docker-compose`.
 
@@ -22,11 +22,13 @@ export HASURA_GRAPHQL_JWT_SECRET_KEY=$(openssl rand -base64 68)
 export HASURA_GRAPHQL_JWT_SECRET="{ \"type\": \"${HASURA_GRAPHQL_JWT_SECRET_TYPE}\", \"key\": \"${HASURA_GRAPHQL_JWT_SECRET_KEY}\" }"
 # Set to "true" to enable the Hasura GraphQL console (development). Set to "false" for production.
 export HASURA_GRAPHQL_ENABLE_CONSOLE="true"
+# pick a release version from: https://github.com/romitagl/kgraph/releases
 export KGRAPH_VERSION="v0.1"
 ```
 
-- `docker-compose up -d`
+- run Docker Compose: `docker-compose up -d frontend`
 
-Hasura Console will be available on `http://localhost:8080/console`
+### Services
 
-Web portal will be available on `http://localhost:80`
+- Web portal will be available at: `http://localhost:80`
+- Hasura Console (if enabled) will be available at: `http://localhost:8080/console`

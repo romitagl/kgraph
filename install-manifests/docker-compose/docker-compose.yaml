@@ -24,7 +24,8 @@ services:
     environment:
       HASURA_GRAPHQL_URL: http://graphql-engine:8080/v1/graphql
   graphql-engine:
-    image: hasura/graphql-engine:v1.3.3
+    # auto apply migration at the start
+    image: docker.pkg.github.com/romitagl/kgraph/backend-hasura-schema:${KGRAPH_VERSION}
     ports:
     - "8080:8080"
     depends_on:
@@ -40,15 +41,6 @@ services:
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       HASURA_GRAPHQL_ENABLE_TELEMETRY: "false"
-  hasura-migrate:
-    image: docker.pkg.github.com/romitagl/kgraph/backend-hasura-schema:${KGRAPH_VERSION}
-    depends_on:
-      - "graphql-engine"
-    restart: "no"
-    env_file: ./hasura/env
-    environment:
-      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
-    command: metadata apply --endpoint "http://graphql-engine:${HASURA_INTERNAL_PORT}" --admin-secret ${HASURA_GRAPHQL_ADMIN_SECRET} --project migrations
   frontend:
     image: docker.pkg.github.com/romitagl/kgraph/frontend-vue:${KGRAPH_VERSION}
     ports:

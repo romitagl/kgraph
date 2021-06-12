@@ -1,0 +1,25 @@
+actions:
+- name: Login
+  definition:
+    kind: synchronous
+    handler: http://auth-service:3000/login
+  permissions:
+  - role: anonymous
+  - role: registred_user
+- name: Signup
+  definition:
+    kind: synchronous
+    handler: http://auth-service:3000/signup
+  permissions:
+  - role: anonymous
+  - role: registred_user
+custom_types:
+  enums: []
+  input_objects:
+  - name: LoginInfo
+  - name: SignupParams
+  - name: LoginParams
+  objects:
+  - name: JsonWebToken
+  - name: CreateUserRetVal
+  scalars: []

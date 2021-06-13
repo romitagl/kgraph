@@ -24,4 +24,4 @@ All the environment variables required to operate the services are defined in th
 ### Services
 
 - Web portal will be available at: `http://localhost:80`
-- Hasura Console (if HASURA_GRAPHQL_ENABLE_CONSOLE enabled) will be available at: `http://localhost:8080/console`
+- Hasura Console (if HASURA_GRAPHQL_ENABLE_CONSOLE enabled) will be available at: `http://localhost:8080/console`. Note that the *admin-secret* is defined in the HASURA_GRAPHQL_ADMIN_SECRET variable located in the [env.local](./env.local) file.

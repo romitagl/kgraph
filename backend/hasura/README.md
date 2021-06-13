@@ -87,6 +87,35 @@ To run the tests: `make ci`
 - SQL Full Dump export: run `bash ./utils/export-dump-hasura.sh`. SQL Data is exported to the *schema/hasura-dump-exported.sql* file (folder shared as docker-compose volume)
 - Authentication service build: `docker-compose build auth-service`, to follow the logs: `docker-compose logs -f auth-service`
 
+## Hasura Migrations (v2)
+
+Official documentation: <https://hasura.io/docs/latest/graphql/core/migrations/config-v2/migrations-setup.html#migrations-setup-v2>
+
+To create the migration structure for the first time:
+
+```bash
+# https://hasura.io/docs/latest/graphql/core/hasura-cli/install-hasura-cli.html#install-hasura-cli
+curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
+cd schema
+hasura init kgraph-migration --endpoint http://localhost:8080
+cd kgraph-migration
+# create migration files (note that this will only export the public schema from postgres)
+hasura migrate create "init" --from-server --schema "kgraph"
+# export the metadata
+hasura metadata export
+# in project dir
+hasura migrate status
+```
+
+To add default SQL configuration:
+
+```bash
+bash ./utils/export-data-hasura-as-insert.sh
+# NOTE: change the migration version if not matching
+MIGRATION_VERSION="1623497934726_init"
+cat ./schema/hasura-data-exported-as-insert.sql >> ./schema/kgraph-migration/migrations/${MIGRATION_VERSION}/up.sql
+```
+
 ### Postgresql debugging commands
 
 Connect to the postgres container: `docker-compose exec postgres sh`

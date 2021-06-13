@@ -1,0 +1,39 @@
+type Mutation {
+  Login (
+    loginParams: LoginParams!
+  ): JsonWebToken
+}
+
+
+type Mutation {
+  Signup (
+    signupParams: SignupParams!
+  ): CreateUserRetVal
+}
+
+
+
+
+input LoginInfo {
+  username : String!
+  password : String!
+}
+
+input SignupParams {
+  username : String!
+  password : String!
+}
+
+input LoginParams {
+  username : String!
+  password : String!
+}
+
+type JsonWebToken {
+  token : String!
+}
+
+type CreateUserRetVal {
+  username : String!
+}
+

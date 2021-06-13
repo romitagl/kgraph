@@ -1,10 +1,16 @@
-version: '3.6'
+version: '3.8'
 services:
   postgres:
     image: postgres:12
     restart: always
     environment:
       POSTGRES_PASSWORD: postgrespassword
+    # needed because the postgres container does not provide a healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
     - postgres_data:/var/lib/postgresql/data
     - ./schema:/shared/schema
@@ -23,8 +29,10 @@ services:
     ports:
     - "8080:8080"
     depends_on:
-    - "postgres"
-    - "auth-service"
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
     restart: always
     environment:
       HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
@@ -35,5 +43,16 @@ services:
       HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: "anonymous"
       HASURA_GRAPHQL_ENABLE_TELEMETRY: "false"
+  # hasura-migrate:
+  #   build: ./schema
+  #   depends_on:
+  #     - "graphql-engine"
+  #   restart: "no"
+  #   command: metadata apply --endpoint "http://graphql-engine:${HASURA_INTERNAL_PORT}" --admin-secret ${HASURA_GRAPHQL_ADMIN_SECRET} --project migrations
+  #   volumes:
+  #     - ./schema/migrations:/hasura-migrations
+  #     - ./schema/metadata:/hasura-metadata
+  #   environment:
+  #     HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
 volumes:
   postgres_data: {}

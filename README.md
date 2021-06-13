@@ -16,6 +16,8 @@ This project aims at creating a knowledge database with hierarchical topic model
 
 ![CI](https://github.com/romitagl/kgraph/workflows/CI/badge.svg?branch=master)
 
+![Releases](https://github.com/romitagl/kgraph/workflows/CD%20Release/badge.svg?branch=release)
+
 ## Dependencies
 
 - [Docker](https://www.docker.com)
@@ -28,6 +30,10 @@ This project aims at creating a knowledge database with hierarchical topic model
   - `hasura` : GraphQL Server + PostgreSQL Database
 - `frontend` : frontend services
   - `vue` : Vue JS (version 2) framework + Apollo Graphql Client
+
+## Quickstart
+
+To setup a Docker environment from the latest release, please follow steps described [here](./install-manifests/docker-compose/README.md).
 
 ## Developer Notes
 

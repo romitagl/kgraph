@@ -31,7 +31,7 @@ cd vue
 make start
 ```
 
- To change the default port from 8080 to 5000: `npm run serve -- --port 5000` or configure the file `vue.config.js`:
+To change the default port from 8080 to 5000: `npm run serve -- --port 5000` or configure the file `vue.config.js`:
 
 ```javascript
 module.exports = {

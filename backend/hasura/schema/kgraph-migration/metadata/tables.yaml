@@ -1,0 +1,302 @@
+- table:
+    schema: kgraph
+    name: labels
+  object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: users_username
+  array_relationships:
+  - name: topics_labels
+    using:
+      foreign_key_constraint_on:
+        column: labels_id
+        table:
+          schema: kgraph
+          name: topics_labels
+  insert_permissions:
+  - role: registred_user
+    permission:
+      check:
+        users_username:
+          _eq: X-Hasura-User-Id
+      set:
+        users_username: x-hasura-User-Id
+      columns:
+      - description
+      - id
+      - title
+      - updated_at
+      - users_username
+      backend_only: false
+  select_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - description
+      - id
+      - title
+      - updated_at
+      - users_username
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  update_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - description
+      - id
+      - title
+      - updated_at
+      - users_username
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: registred_user
+    permission:
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: kgraph
+    name: roles
+  array_relationships:
+  - name: users_roles
+    using:
+      foreign_key_constraint_on:
+        column: roles_id
+        table:
+          schema: kgraph
+          name: users_roles
+- table:
+    schema: kgraph
+    name: topics
+  object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: users_username
+  array_relationships:
+  - name: topics_labels
+    using:
+      foreign_key_constraint_on:
+        column: topics_id
+        table:
+          schema: kgraph
+          name: topics_labels
+  insert_permissions:
+  - role: registred_user
+    permission:
+      check:
+        users_username:
+          _eq: X-Hasura-User-Id
+      set:
+        users_username: x-hasura-User-Id
+      columns:
+      - content
+      - created_at
+      - id
+      - name
+      - parent_id
+      - public
+      - updated_at
+      - users_username
+      backend_only: false
+  select_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - content
+      - created_at
+      - id
+      - name
+      - parent_id
+      - public
+      - updated_at
+      - users_username
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  update_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - content
+      - created_at
+      - id
+      - name
+      - parent_id
+      - public
+      - updated_at
+      - users_username
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: registred_user
+    permission:
+      filter:
+        users_username:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: kgraph
+    name: topics_labels
+  object_relationships:
+  - name: label
+    using:
+      foreign_key_constraint_on: labels_id
+  - name: topic
+    using:
+      foreign_key_constraint_on: topics_id
+  insert_permissions:
+  - role: registred_user
+    permission:
+      check:
+        _and:
+        - topic:
+            users_username:
+              _eq: X-Hasura-User-Id
+        - _and:
+          - label:
+              users_username:
+                _eq: X-Hasura-User-Id
+      columns:
+      - labels_id
+      - topics_id
+      - id
+      backend_only: false
+  select_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - labels_id
+      - topics_id
+      - id
+      filter:
+        _and:
+        - topic:
+            users_username:
+              _eq: X-Hasura-User-Id
+        - _and:
+          - label:
+              users_username:
+                _eq: X-Hasura-User-Id
+      allow_aggregations: true
+  update_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - labels_id
+      - id
+      - topics_id
+      filter:
+        _and:
+        - topic:
+            users_username:
+              _eq: X-Hasura-User-Id
+        - _and:
+          - label:
+              users_username:
+                _eq: X-Hasura-User-Id
+      check: null
+  delete_permissions:
+  - role: registred_user
+    permission:
+      filter:
+        _and:
+        - topic:
+            users_username:
+              _eq: X-Hasura-User-Id
+        - _and:
+          - label:
+              users_username:
+                _eq: X-Hasura-User-Id
+- table:
+    schema: kgraph
+    name: users
+  array_relationships:
+  - name: labels
+    using:
+      foreign_key_constraint_on:
+        column: users_username
+        table:
+          schema: kgraph
+          name: labels
+  - name: topics
+    using:
+      foreign_key_constraint_on:
+        column: users_username
+        table:
+          schema: kgraph
+          name: topics
+  - name: users_roles
+    using:
+      foreign_key_constraint_on:
+        column: users_username
+        table:
+          schema: kgraph
+          name: users_roles
+  insert_permissions:
+  - role: registred_user
+    permission:
+      check:
+        username:
+          _eq: X-Hasura-User-Id
+      set:
+        username: x-hasura-User-Id
+      columns:
+      - data
+      - display_name
+      - email
+      - password_hash
+      - username
+      backend_only: false
+  select_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - created_at
+      - data
+      - display_name
+      - email
+      - password_hash
+      - updated_at
+      - username
+      filter:
+        username:
+          _eq: X-Hasura-User-Id
+  update_permissions:
+  - role: registred_user
+    permission:
+      columns:
+      - data
+      - display_name
+      - email
+      - password_hash
+      - username
+      filter:
+        username:
+          _eq: X-Hasura-User-Id
+      check: {}
+      set:
+        username: x-hasura-User-Id
+  delete_permissions:
+  - role: registred_user
+    permission:
+      filter:
+        username:
+          _eq: X-Hasura-User-Id
+- table:
+    schema: kgraph
+    name: users_roles
+  object_relationships:
+  - name: role
+    using:
+      foreign_key_constraint_on: roles_id
+  - name: user
+    using:
+      foreign_key_constraint_on: users_username

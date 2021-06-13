@@ -19,18 +19,18 @@ jobs:
           # Otherwise, uses the default branch.
           ref: 'release'
 
-      - name: Npm Install
-        shell: bash
-        run: |
-          npm install
+      # - name: Npm Install
+      #   shell: bash
+      #   run: |
+      #     npm install
 
-      - name: Build dist
-        shell: bash
-        run: |
-          # compiles and minifies for production
-          # TODO => set npm run build --mode $TARGET_ENV
-          # https://cli.vuejs.org/guide/mode-and-env.html#modes
-          npm run build
+      # - name: Build dist
+      #   shell: bash
+      #   run: |
+      #     # compiles and minifies for production
+      #     # TODO => set npm run build --mode $TARGET_ENV
+      #     # https://cli.vuejs.org/guide/mode-and-env.html#modes
+      #     npm run build
 
       # https://cli.vuejs.org/guide/deployment.html#github-pages
       - name: Build Docker images and Publish to the registry

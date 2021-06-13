@@ -9,21 +9,19 @@ This Docker Compose setup runs [Hasura GraphQL Engine](https://github.com/hasura
 
 ## Usage
 
-- Clone this repo on a machine where you'd like to run the entire project
-- Set the required environment variables:
+- Clone this repo or, minimally, download the following files:
+  - ./docker-compose.yaml
+  - ./env.local
 
-```bash
-# pick a release version from: https://github.com/romitagl/kgraph/releases
-export KGRAPH_VERSION="v0.1"
-```
+*Note* that the docker-compose.yaml is set to pull the `latest` version available of KGraph images. To pin it down to a specific version, just replace `latest` with release version from: <https://github.com/romitagl/kgraph/releases>.
 
 - to start: `docker-compose up -d frontend`
 - to stop: `docker-compose down`
 - to remove the volume containing the database: `docker volume rm -f docker-compose_postgres_data`
 
-All the enviroment variables required to operate the services are defined in the [env.local](./env.local) file.
+All the environment variables required to operate the services are defined in the [env.local](./env.local) file.
 
 ### Services
 
 - Web portal will be available at: `http://localhost:80`
-- Hasura Console (if enabled) will be available at: `http://localhost:8080/console`
+- Hasura Console (if HASURA_GRAPHQL_ENABLE_CONSOLE enabled) will be available at: `http://localhost:8080/console`

@@ -27,6 +27,9 @@ publish_docker_images: build_docker
 	# docker tag IMAGE_ID docker.pkg.github.com/OWNER/REPOSITORY/IMAGE_NAME:VERSION
 	[ -e "./Dockerfile" ] && [ ! -z $(REGISTRY_URL) ] && docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) $(REGISTRY_URL)/$(OWNER)/$(REPOSITORY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) || echo "no Docker image to tag"
 	[ -e "./Dockerfile" ] && [ ! -z $(REGISTRY_URL) ] && docker push $(REGISTRY_URL)/$(OWNER)/$(REPOSITORY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) || echo "no Docker image to push"
+	# set the latest tag
+	[ -e "./Dockerfile" ] && [ ! -z $(REGISTRY_URL) ] && docker tag $(REGISTRY_URL)/$(OWNER)/$(REPOSITORY)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION) $(REGISTRY_URL)/$(OWNER)/$(REPOSITORY)/$(DOCKER_IMAGE_NAME):latest || echo "no latest Docker image to tag"
+	[ -e "./Dockerfile" ] && [ ! -z $(REGISTRY_URL) ] && docker push $(REGISTRY_URL)/$(OWNER)/$(REPOSITORY)/$(DOCKER_IMAGE_NAME):latest || echo "no latest Docker image to push"
 
 .PHONY: clean
 clean::

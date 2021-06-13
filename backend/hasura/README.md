@@ -112,7 +112,8 @@ To add default SQL configuration:
 ```bash
 bash ./utils/export-data-hasura-as-insert.sh
 # NOTE: change the migration version if not matching
-cat ./schema/hasura-data-exported-as-insert.sql >> ./schema/kgraph-migration/migrations/1623497934726_init/up.sql
+MIGRATION_VERSION="1623497934726_init"
+cat ./schema/hasura-data-exported-as-insert.sql >> ./schema/kgraph-migration/migrations/${MIGRATION_VERSION}/up.sql
 ```
 
 ### Postgresql debugging commands

@@ -10,5 +10,6 @@ ci:
 .PHONY: publish_docker_images
 publish_docker_images:
 	# searches for all Dockerfiles from the root directory and runs the Make publish_docker_images target on each entry
-	find ./frontend -type f -name "Dockerfile" -exec dirname {} \; | xargs -I {} make --directory={} publish_docker_images
+	# exclude the node_modules folders
+	find ./frontend -type f -name "Dockerfile" -not -path "*/node_modules/*" -exec dirname {} \; | xargs -I {} make --directory={} publish_docker_images
 	find ./backend -type f -name "Dockerfile" -exec dirname {} \; | xargs -I {} make --directory={} publish_docker_images

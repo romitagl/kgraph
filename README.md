@@ -6,6 +6,10 @@
 
 This project aims at creating a knowledge database with hierarchical topic modelling.
 
+*An introduction to Knowledge Graphs: <http://ai.stanford.edu/blog/introduction-to-knowledge-graphs>*.
+
+> A knowledge graph is a directed labeled graph in which we have associated domain specific meanings with nodes and edges. Anything can act as a node, for example, people, company, computer, etc. An edge label captures the relationship of interest between the nodes, for example, a friendship relationship between two people, a customer relationship between a company and person, or a network connection between two computers, etc.
+
 ## Licensing
 
 **KGraph** is based on open source technologies and released under the [Apache License](./LICENSE).

@@ -59,7 +59,7 @@
     </v-app-bar>
 
     <v-main class="grey lighten-3">
-      <v-container>
+      <v-container fluid>
         <!-- Topics Graph -->
         <v-row>
           <!-- Topics Panel -->
@@ -162,7 +162,8 @@
             </v-sheet>
           </v-col>
        
-          <v-col>
+          <!-- https://vuetifyjs.com/en/components/grids/#grow-and-shrink -->
+          <v-col cols="10">
               <!-- https://vuetifyjs.com/en/api/v-menu/ -->
               <v-menu
                 absolute

@@ -38,6 +38,7 @@ jobs:
       - name: Build Docker images and Publish to the registry
         shell: bash
         run: |
-          docker login docker.pkg.github.com -u publisher -p "${{ secrets.GITHUB_TOKEN }}"
+          # docker login docker.pkg.github.com -u publisher -p "${{ secrets.GITHUB_TOKEN }}"
+          docker login --username romitagl -p ${{ secrets.CD_DOCKER_HUB_TOKEN_ROMITAGL }}
           make publish_docker_images
 

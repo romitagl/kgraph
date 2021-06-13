@@ -9,6 +9,7 @@ REPOSITORY="kgraph"
 FILE_PATH=$(shell git ls-files --full-name Makefile | sed -e "s/Makefile//g" )
 DOCKER_IMAGE_NAME=$(shell echo $(FILE_PATH) | sed -e "s/\//-/g" | rev | cut -c2- | rev )
 GIT_SHA=$(shell git rev-parse HEAD)
+# git tag | tail -n 1
 GIT_TAG=$(shell git describe --abbrev=0 --tags)
 DOCKER_IMAGE_VERSION=$(GIT_TAG)
 

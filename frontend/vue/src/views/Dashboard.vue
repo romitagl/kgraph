@@ -100,6 +100,7 @@
                           single-line
                           small-chips
                           return-object
+                          :no-filter=true
                         ></v-combobox>
                       </v-col>
                     </v-row>
@@ -597,7 +598,7 @@ export default {
       deleteListTopic(this.topicsList, this.selectedNodeID);
 
       // reset fields
-      this.resetTopicFields()
+      this.resetTopicFields();
 
       // redraw
       this.buildVisGraph();

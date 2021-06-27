@@ -20,7 +20,7 @@ This project aims at creating a knowledge database with hierarchical topic model
 
 ![CI](https://github.com/romitagl/kgraph/workflows/CI/badge.svg?branch=master)
 
-![Releases](https://github.com/romitagl/kgraph/workflows/CD%20Release/badge.svg?branch=release)
+[![CD Release](https://github.com/romitagl/kgraph/actions/workflows/cd-release.yaml/badge.svg)](https://github.com/romitagl/kgraph/actions/workflows/cd-release.yaml)
 
 ## Dependencies
 

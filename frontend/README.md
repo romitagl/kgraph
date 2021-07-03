@@ -29,6 +29,9 @@ cd vue ; vue add vuetify
 cd vue
 # check env and - npm run serve
 make start
+
+# to start the frontend in Demo mode, with no backend
+make start_demo
 ```
 
 To change the default port from 8080 to 5000: `npm run serve -- --port 5000` or configure the file `vue.config.js`:

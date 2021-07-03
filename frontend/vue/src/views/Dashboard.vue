@@ -33,7 +33,7 @@
             solo-inverted
           ></v-text-field>
           <ApolloQuery
-            v-if="topicName != prevTopicName && selectedUser != ''"
+            v-if="topicName != prevTopicName && selectedUser != '' && ! this.demoMode"
             :query="require('../graphql/SearchTopicsForUser.gql')"
             :variables="{ topicsName: '%'+topicName+'%', username: selectedUser }"
           >
@@ -390,6 +390,7 @@ function deleteListTopic(topicsList, id){
 export default {
   data () {
     return {
+      demoMode: false,
       username: '',
       selectedUser: '',
       topicName: '',
@@ -450,6 +451,16 @@ export default {
   created() {
     this.network = null;
     //this.$route.query.username;
+
+    // frontend only mode (demo)
+    const noBackend = process.env.VUE_APP_NO_BACKEND || false;
+    console.log("created - VUE_APP_NO_BACKEND:%s", noBackend)
+    if(noBackend) {
+      this.demoMode = true;
+      this.selectedUser = "demo";
+      return;
+    }
+
     if (window.sessionStorage.getItem('auth_token')) {
       this.selectedUser = window.sessionStorage.getItem('username');
     } else {
@@ -546,25 +557,26 @@ export default {
       }
       console.log("onUpdateNode - addTopicLabel:", this.addTopicLabel);
 
-      try {
-        await this.$apollo.mutate({
-          mutation: require('../graphql/UpdateTopicForUser.gql'),
-          variables: {
-            topicName: this.addTopicName,
-            content: this.addTopicContent,
-            username: this.selectedUser,
-            id: this.selectedNodeID,
-            parent_id: this.addTopicParentID,
-            topicLabel: this.addTopicLabel,
-          }
-        })
+      if (!this.demoMode) {
+        try {
+          await this.$apollo.mutate({
+            mutation: require('../graphql/UpdateTopicForUser.gql'),
+            variables: {
+              topicName: this.addTopicName,
+              content: this.addTopicContent,
+              username: this.selectedUser,
+              id: this.selectedNodeID,
+              parent_id: this.addTopicParentID,
+              topicLabel: this.addTopicLabel,
+            }
+          })
+        }
+        catch (error) {
+          console.error(error.message);
+          alert(error.message);
+          return;
+        }
       }
-      catch (error) {
-        console.error(error.message);
-        alert(error.message);
-        return;
-      }
-
       // update element for the list
       updateTopicsTree(this.topics, this.topicsRelations, this.selectedNodeID, this.addTopicName, this.addTopicContent, this.addTopicParentID, this.addTopicLabel);
       updateTopicsList(this.topicsList, this.selectedNodeID, this.addTopicName);
@@ -578,19 +590,22 @@ export default {
         alert("No selected node found!");
         return;
       }
-      try {
-        await this.$apollo.mutate({
-          mutation: require('../graphql/DeleteTopicForUser.gql'),
-          variables: {
-            topicID: this.selectedNodeID,
-            username: this.selectedUser
-          }
-        })
-      }
-      catch (error) {
-        console.error(error.message);
-        alert(error.message);
-        return;
+
+      if (!this.demoMode) {
+        try {
+          await this.$apollo.mutate({
+            mutation: require('../graphql/DeleteTopicForUser.gql'),
+            variables: {
+              topicID: this.selectedNodeID,
+              username: this.selectedUser
+            }
+          })
+        }
+        catch (error) {
+          console.error(error.message);
+          alert(error.message);
+          return;
+        }
       }
 
       // remove element from the topic list
@@ -615,37 +630,43 @@ export default {
       this.addTopicParentID = (child ? this.selectedNodeID : null)
       this.addTopicLabel = addTopicLabel;
 
-      var result = null;
-      try {
-        if(this.addTopicLabel == "") {
-          result = await this.$apollo.mutate({
-            mutation: require('../graphql/AddTopicForUser.gql'),
-            variables: {
-              topicsName: this.addTopicName,
-              content: this.addTopicContent,
-              parent_id: (child ? this.selectedNodeID : null)
-            }
-          })
-        } else {
-          result = await this.$apollo.mutate({
-            mutation: require('../graphql/AddTopicLabelForUser.gql'),
-            variables: {
-              topicsName: this.addTopicName,
-              content: this.addTopicContent,
-              parent_id: (child ? this.selectedNodeID : null),
-              topicLabel: this.addTopicLabel
-            }
-          })
+      if (!this.demoMode) {
+        var result = null;
+        try {
+          if(this.addTopicLabel == "") {
+            result = await this.$apollo.mutate({
+              mutation: require('../graphql/AddTopicForUser.gql'),
+              variables: {
+                topicsName: this.addTopicName,
+                content: this.addTopicContent,
+                parent_id: (child ? this.selectedNodeID : null)
+              }
+            })
+          } else {
+            result = await this.$apollo.mutate({
+              mutation: require('../graphql/AddTopicLabelForUser.gql'),
+              variables: {
+                topicsName: this.addTopicName,
+                content: this.addTopicContent,
+                parent_id: (child ? this.selectedNodeID : null),
+                topicLabel: this.addTopicLabel
+              }
+            })
+          }
         }
-      }
-      catch (error) {
-        console.error(error.message);
-        alert(error.message);
-        return;
+        catch (error) {
+          console.error(error.message);
+          alert(error.message);
+          return;
+        }
+
+        // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
+        this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
+      } else {
+        // use topic name as ID
+        this.topicAddedResult = this.addTopicName;
       }
 
-      // { "data": { "insert_kgraph_topics": { "returning": [ { "created_at": "2021-01-31T12:23:53.124938+00:00", "__typename": "kgraph_topics" } ], "__typename": "kgraph_topics_mutation_response" } } }
-      this.topicAddedResult = result.data.insert_kgraph_topics.returning[0].id
       // close the add Dialog
       this.btnAddTopic = false;
 

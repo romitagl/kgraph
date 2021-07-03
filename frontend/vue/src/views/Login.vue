@@ -183,7 +183,11 @@ export default {
     },
     created() {
       console.log("created")
-      if (window.sessionStorage.getItem('auth_token')) {
+      // frontend only mode (demo)
+      // The VUE_APP_ prefix is important here, and variables without that prefix will not be available in your app.
+      const noBackend = process.env.VUE_APP_NO_BACKEND || false;
+
+      if ((window.sessionStorage.getItem('auth_token')) || noBackend ) {
         this.$router.push( {path: '/dashboard' });
       }
     },

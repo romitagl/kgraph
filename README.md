@@ -34,10 +34,12 @@ This project aims at creating a knowledge database with hierarchical topic model
   - `hasura` : GraphQL Server + PostgreSQL Database
 - `frontend` : frontend services
   - `vue` : Vue JS (version 2) framework + Apollo Graphql Client
+- `install-manifests` : installation/deployment files
+  - `docker-compose` : Docker Compose configuration to run the latest release of the full KGraph stack
 
 ## Quickstart
 
-To setup a Docker environment from the latest release, please follow steps described [here](./install-manifests/docker-compose/README.md).
+To setup a Docker environment from the latest release, please follow steps described at [install-manifests/docker-compose](./install-manifests/docker-compose).
 
 ## Developer Notes
 

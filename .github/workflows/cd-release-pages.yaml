@@ -1,0 +1,47 @@
+name: CD Release Pages Demo
+
+on:
+  release:
+    types: [published]
+  # test branch
+  push:
+    branches:
+      - gl/vue
+    paths-ignore:
+      # skip CI for documentation updates
+      - "**/*.md"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v2
+        with:
+          # The branch, tag or SHA to checkout. When checking out the repository that
+          # triggered a workflow, this defaults to the reference or SHA for that event.
+          # Otherwise, uses the default branch.
+          # ref: release
+          ref: gl/vue
+          # Fetch all history for all tags and branches
+          fetch-depth: 0
+
+      - name: Build dist Demo mode
+        shell: bash
+        run: |
+          # compiles and minifies for production
+          # https://cli.vuejs.org/guide/mode-and-env.html#modes
+          cd frontend/vue
+          npm install
+          npm run build -- --mode demo
+          cd dist
+          git init
+          git add -A
+          git commit -m 'deploy'
+          git push -f git@github.com:romitagl/kgraph.git main:gh-pages
+
+      # https://cli.vuejs.org/guide/deployment.html#github-pages
+

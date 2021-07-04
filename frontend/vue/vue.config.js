@@ -1,7 +1,7 @@
 module.exports = {
-  // publicPath: process.env.NODE_ENV === 'demo'
-  // ? '/kgraph/'
-  // : '/',
+  publicPath: process.env.NODE_ENV === 'demo'
+  ? '/kgraph/'
+  : '/',
   devServer: {
     port: 5000
   },

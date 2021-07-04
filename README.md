@@ -22,6 +22,18 @@ This project aims at creating a knowledge database with hierarchical topic model
 
 [![CD Release](https://github.com/romitagl/kgraph/actions/workflows/cd-release.yaml/badge.svg)](https://github.com/romitagl/kgraph/actions/workflows/cd-release.yaml)
 
+[![CD Release GitHub Pages](https://github.com/romitagl/kgraph/actions/workflows/cd-release-pages.yaml/badge.svg)](https://github.com/romitagl/kgraph/actions/workflows/cd-release-pages.yaml)
+
+## Demo KGraph Frontend
+
+To play with KGraph without backend services, **NOTE that topic search is not enabled and content is not persisted**, you can use the [GitHub Pages link](https://romitagl.github.io/kgraph/).
+
+![KGraph - Animated gif demo](assets/kgraph-demo.gif)
+
+## Quickstart
+
+To setup a Docker environment from the latest release, please follow steps described at [install-manifests/docker-compose](./install-manifests/docker-compose).
+
 ## Dependencies
 
 - [Docker](https://www.docker.com)
@@ -36,10 +48,6 @@ This project aims at creating a knowledge database with hierarchical topic model
   - `vue` : Vue JS (version 2) framework + Apollo Graphql Client
 - `install-manifests` : installation/deployment files
   - `docker-compose` : Docker Compose configuration to run the latest release of the full KGraph stack
-
-## Quickstart
-
-To setup a Docker environment from the latest release, please follow steps described at [install-manifests/docker-compose](./install-manifests/docker-compose).
 
 ## Developer Notes
 

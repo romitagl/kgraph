@@ -3,13 +3,13 @@ name: CD Release Pages Demo
 on:
   release:
     types: [published]
-  # test branch
-  push:
-    branches:
-      - gl/vue
-    paths-ignore:
-      # skip CI for documentation updates
-      - "**/*.md"
+  # UNCOMMENT BELOW FOR TESTING
+  # push:
+  #   branches:
+  #     - gl/vue
+  #   paths-ignore:
+  #     # skip CI for documentation updates
+  #     - "**/*.md"
 
 jobs:
   build:
@@ -24,8 +24,9 @@ jobs:
           # The branch, tag or SHA to checkout. When checking out the repository that
           # triggered a workflow, this defaults to the reference or SHA for that event.
           # Otherwise, uses the default branch.
-          # ref: release
-          ref: gl/vue
+          ref: release
+          # UNCOMMENT BELOW FOR TESTING
+          # ref: gl/vue
           # Fetch all history for all tags and branches
           fetch-depth: 0
 

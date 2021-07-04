@@ -30,7 +30,7 @@ cd vue
 # check env and - npm run serve
 make start
 
-# to start the frontend in Demo mode, with no backend
+# to start the frontend in Demo mode, without backend services
 make start_demo
 ```
 

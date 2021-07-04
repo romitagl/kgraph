@@ -10,8 +10,8 @@ This Docker Compose setup runs [Hasura GraphQL Engine](https://github.com/hasura
 ## Usage
 
 - Clone this repo or, minimally, download the following files:
-  - ./docker-compose.yaml
-  - ./env.local
+  - [docker-compose.yaml](./docker-compose.yaml)
+  - [env.local](./env.local)
 
 *Note* that the docker-compose.yaml is set to pull the `latest` version available of KGraph images. To pin it down to a specific version, just replace `latest` with release version from: <https://github.com/romitagl/kgraph/releases>.
 

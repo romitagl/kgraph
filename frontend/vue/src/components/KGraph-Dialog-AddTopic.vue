@@ -71,6 +71,7 @@ export default {
                   single-line
                   small-chips
                   return-object
+                  :no-filter=true
                 ></v-combobox>
               </v-col>
             </v-row>

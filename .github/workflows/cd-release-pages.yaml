@@ -50,7 +50,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages # The branch the action should deploy to.
-          folder: frontend/vue/build # The folder the action should deploy.
+          folder: frontend/vue/dist # The folder the action should deploy.
 
       # https://cli.vuejs.org/guide/deployment.html#github-pages
-

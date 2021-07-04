@@ -686,12 +686,12 @@ export default {
       console.log("onEditNode event: ", event, " node: ", node)
     },
     onNetworkContext(params) {
-      console.log("onContext:", params)
+      console.log("onContext:", params);
       params.event.preventDefault();
       params.event = "[original event]";
       // document.getElementById("eventSpanContent").innerText = JSON.stringify(params, null, 4 );
       this.selectedNodeID = params.nodes.length > 0 ? params.nodes[0] : '';
-      console.log("selectedNodeID:", this.selectedNodeID)
+      console.log("selectedNodeID:", this.selectedNodeID);
       this.btnAddTopic = true;
     },
     buildVisGraph() {

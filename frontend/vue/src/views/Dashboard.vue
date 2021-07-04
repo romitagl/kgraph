@@ -720,7 +720,7 @@ export default {
       this.network.on("doubleClick", function(data) {
         console.log("doubleClick: ", data);
       });
-      // Fired when the user click on the canvas with the right mouse button. The right mouse button does not select by default. You can use the method getNodeAt to select the node if you want.
+      // fired when the user click on the canvas with the right mouse button. The right mouse button does not select by default. You can use the method getNodeAt to select the node if you want.
       this.network.on("oncontext", this.onNetworkContext);
     },
   },

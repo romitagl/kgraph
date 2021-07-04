@@ -37,20 +37,20 @@ jobs:
           cd frontend/vue
           npm install
           npm run build -- --mode demo
-          cd dist
-          git init
-          # omit --global to set the identity only in this repository
-          git config --global user.email "romitagl@gmail.com"
-          git config --global user.name "Gian Luigi Romita"
-          git add -A
-          git commit -m 'deploy'
-          git push -f git@github.com:romitagl/kgraph.git main:gh-pages
+          # cd dist
+          # git init
+          # # omit --global to set the identity only in this repository
+          # git config --global user.email "romitagl@gmail.com"
+          # git config --global user.name "Gian Luigi Romita"
+          # git add -A
+          # git commit -m 'deploy'
+          # git push -f git@github.com:romitagl/kgraph.git main:gh-pages
 
-      # - name: Deploy 🚀
-      #   uses: JamesIves/github-pages-deploy-action@4.1.4
-      #   with:
-      #     branch: gh-pages # The branch the action should deploy to.
-      #     folder: frontend/vue/build # The folder the action should deploy.
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: frontend/vue/build # The folder the action should deploy.
 
       # https://cli.vuejs.org/guide/deployment.html#github-pages
 

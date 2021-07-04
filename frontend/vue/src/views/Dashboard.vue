@@ -683,7 +683,7 @@ export default {
     },
     onEditNode(event) {
       const node = this.nodes.get(event.nodes[0]);
-      console.log("onEditNode event: ", event, " node: ", node)
+      console.log("onEditNode event: ", event, " node: ", node);
     },
     onNetworkContext(params) {
       console.log("onContext:", params);

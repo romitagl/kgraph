@@ -1,6 +1,7 @@
-FROM python:3.8.7-slim-buster
+FROM python:3.9-slim-buster
 
 COPY requirements.txt ./
+RUN python -m pip install --upgrade setuptools pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # add source code

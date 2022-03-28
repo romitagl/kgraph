@@ -1,4 +1,12 @@
-flask==1.1.2
-urllib3==1.26.5
-pyjwt==2.0.1
+# pip freeze
+click==8.1.0
+Flask==2.1.0
+importlib-metadata==4.11.3
+itsdangerous==2.1.2
+Jinja2==3.1.1
+MarkupSafe==2.1.1
+PyJWT==2.3.0
+urllib3==1.26.9
 waitress==2.1.1
+Werkzeug==2.1.0
+zipp==3.7.0
